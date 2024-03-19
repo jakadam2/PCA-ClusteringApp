@@ -25,13 +25,20 @@ const DataPreview = () => {
     // TODO - implement name change and send changes to backend (after saving?)
   };
 
+  const changeDataType = (header, columnId, newType) => {
+    console.log(`Data type clicked ${header} col: ${columnId}, changed to: ${newType.target.value}`);
+    // TODO - implement type change
+    // get data types from backend along with csv file and send changes to back (also after clicking 'save'?)
+  };
 
-  // Creating headers (variable names)
   const headers = data.length > 0 ? Object.keys(data[0]) : [];
+  const dataTypes = ["Numerical", "Categorical", "Text"]; // Example data types, to be extracted from back along with data
 
   return (
     <div className="max-w-90 max-h-80 overflow-scroll bg-slate-100">
       <table className="min-w-full divide-y divide-gray-200">
+
+        {/* Headers/Variable names */}
         <thead className="bg-gray-50">
           <tr>
             {headers.map((header, columnId) => (
@@ -40,7 +47,25 @@ const DataPreview = () => {
               </th>
             ))}
           </tr>
+
+          {/* Data type dropdown*/}
+          <tr className="bg-gray-100">
+            {headers.map((header, columnId) => (
+              <th key={`type-${header}`} className="px-3 py-2 text-sm text-gray-600">
+                <select 
+                  className="form-select block w-full px-2 py-1.5 text-xs font-normal text-gray-700 bg-white bg-clip-padding bg-no-repeat border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" 
+                  onChange={(event) => changeDataType(header, columnId, event)}
+                >
+                  {dataTypes.map((type) => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </th>
+            ))}
+          </tr>
         </thead>
+
+        {/* Data values */}
         <tbody className="bg-white divide-y divide-gray-200">
           {data.map((row, rowIndex) => (
             <tr key={rowIndex} className={`${rowIndex % 2 === 0 ? 'bg-blue-50' : 'bg-gray-50'}`}>
