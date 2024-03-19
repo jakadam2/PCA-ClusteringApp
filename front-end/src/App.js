@@ -5,7 +5,7 @@ import DataTypeEditPage from './pages/DataTypeEditPage';
 
 function App() {
   return (
-    <div className="px-20 py-20 justify-start">
+    <div className="px-10 py-10 justify-start">
       <Router>
         <Routes>
           <Route path="/" element={<FileExplorer/>} />
