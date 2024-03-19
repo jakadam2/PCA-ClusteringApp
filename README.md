@@ -6,7 +6,7 @@
 variable = {
     "id":int,
     "name":string,
-    "typeId":int,
+    "typeId":int[0|1],
     "values":[double]
     }
 
@@ -17,13 +17,14 @@ dataset = {
     }
 
 dataType = {
-    "id":int,
+    "id":int[0|1],  // numerical or categorical
     "name":string
     }
 
 normalizationMethod = {
     "id":int,
-    "name":string
+    "name":string,
+    "typeId":int[0|1]
     }
 
 clusteringAlgorithm = {
