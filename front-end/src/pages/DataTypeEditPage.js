@@ -1,5 +1,6 @@
 import React from 'react';
 import DataPreview from '../components/data_editor_window/DataPreview';
+import NewPageButton from '../components/buttons/NewPageButton';
 
 const DataTypeEditPage = () => {
 
@@ -13,8 +14,12 @@ const DataTypeEditPage = () => {
                   focus:outline-none dark:focus:ring-blue-800"
                   style={{ margin: 'auto' }}>
                       Sposoby normalizacji
-              </button>
-            </div>
+          </button>
+      </div>
+
+      <div  className="absolute bottom-0 right-0">
+        <NewPageButton path={"/"}/>
+      </div>
     </div>
   );
 };
