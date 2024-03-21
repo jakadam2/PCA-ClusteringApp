@@ -28,9 +28,4 @@ class PCA:
     @classmethod
     def explained_variance(cls):
         return cls._pca.explained_variance_ratio_
-
-
-        
-
-
         

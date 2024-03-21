@@ -1,9 +1,9 @@
-from enum import Enum
+from enum import Enum, auto
 
 
 class CatNormType(Enum):
-    ONE_HOT = 0
+    ONE_HOT = auto()
 
 
 class NumNormType(Enum):
-    STANDARDIZATION = 0
+    STANDARDIZATION = auto()

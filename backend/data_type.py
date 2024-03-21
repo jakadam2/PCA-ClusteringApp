@@ -1,6 +1,6 @@
-from enum import Enum
+from enum import Enum, auto
 
 
 class DataType(Enum):
-    NUMERICAL = 0
-    CATEGORICAL = 1
+    NUMERICAL = auto()
+    CATEGORICAL = auto()
