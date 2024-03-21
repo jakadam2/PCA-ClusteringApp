@@ -74,3 +74,16 @@ class DataTransformer:
     def get_categorical_columns(dataset: DataFrame):
         """Returns list of columns solely containing categorical(non numeric) data."""
         return dataset.columns.difference(DataTransformer.get_numerical_columns(dataset))
+
+    @staticmethod
+    def get_normalization_methods() -> list[dict]:
+        """Returns list of dictionaries describing normalization methods."""
+        response = []
+
+        for method_type in CatNormType:
+            response.append({"name": method_type, "compatible_types": [DataType.CATEGORICAL]})
+
+        for method_type in NumNormType:
+            response.append({"name": method_type, "compatible_types": [DataType.NUMERICAL]})
+
+        return response

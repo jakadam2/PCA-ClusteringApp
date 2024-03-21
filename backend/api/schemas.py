@@ -33,10 +33,10 @@ clusteringDescription = {
     }
 """
 import datetime
-import io
 
+from fastapi import File
 from pandas import DataFrame
-from pydantic import BaseModel, ConfigDict, TypeAdapter
+from pydantic import BaseModel, TypeAdapter
 
 from backend.clustering import ClusteringMethod
 from backend.data_type import DataType
@@ -44,7 +44,6 @@ from backend.normalization import CatNormType, NumNormType
 
 
 class Column(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
     name: str
     type: DataType
     values: list[float | int | bool | str | datetime.datetime]
@@ -65,7 +64,7 @@ DataTypeAdapter = TypeAdapter(DataType)
 
 class NormalizationType(BaseModel):
     name: CatNormType | NumNormType
-    compatible_types: list[DataTypeAdapter]
+    compatible_types: list[DataType]
 
 
 ClusteringAlgorithm = TypeAdapter(ClusteringMethod)
@@ -73,7 +72,7 @@ ClusteringAlgorithm = TypeAdapter(ClusteringMethod)
 
 class Graph(BaseModel):
     name: str
-    bytes: io.BytesIO
+    data: bytes = File(...)
 
 
 class UpdateColumnNames(BaseModel):
@@ -81,4 +80,4 @@ class UpdateColumnNames(BaseModel):
 
 
 class UpdateColumnTypes(BaseModel):
-    mapping: dict[str, DataTypeAdapter]
+    mapping: dict[str, DataType]

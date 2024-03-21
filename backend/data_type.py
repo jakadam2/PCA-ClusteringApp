@@ -1,6 +1,6 @@
-from enum import Enum, auto
+from enum import StrEnum, auto
 
 
-class DataType(Enum):
+class DataType(StrEnum):
     NUMERICAL = auto()
     CATEGORICAL = auto()
