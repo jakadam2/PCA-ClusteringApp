@@ -18,7 +18,7 @@ const DataTypeEditPage = () => {
       </div>
 
       <div  className="absolute bottom-0 right-0">
-        <NewPageButton path={"/"}/>
+        <NewPageButton path={"/save-file"}/>
       </div>
     </div>
   );
