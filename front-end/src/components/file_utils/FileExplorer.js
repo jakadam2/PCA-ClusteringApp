@@ -40,6 +40,9 @@ const FileExplorer = () => {
           } catch (error) {
             console.error('Error uploading file:', error);
             alert('Error uploading file.');
+
+            // TODO: delete this after connecting to backend
+            navigate('/data-type-edit');
         }
 
     } else {
