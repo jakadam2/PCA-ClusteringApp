@@ -15,15 +15,33 @@ const FileExplorer = () => {
     multiple: false
   });
 
-  const handleStartWork = () => {
+  const handleStartWork = async () => {
     if (selectedFile) {
         console.log(selectedFile);
-        navigate('/data-type-edit');
-    // Implement the logic to work with the selected file
-    // TODO
-    // - check file type
-    // - post data to backend
-    // - get data to context and move on to another view
+        const formData = new FormData();
+        formData.append('file', selectedFile, selectedFile.name);
+
+        // TODO: check if it's even working correctly
+        // POST file to backend
+        try {
+            const response = await fetch('http://localhost:8080/file', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log('File uploaded successfully', data);
+
+            navigate('/data-type-edit');
+          } catch (error) {
+            console.error('Error uploading file:', error);
+            alert('Error uploading file.');
+        }
+
     } else {
       console.log('No file selected.');
     }
