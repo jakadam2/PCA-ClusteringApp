@@ -1,24 +1,23 @@
 import pandas as pd
 import numpy as np
-
+from backend.api.schemas import DatasetSchema
+from backend.data_type import DataType
 
 class DataSetImplementation:
-    '''
-    Implements all of functionalities of DataSet but it is not singleton
-    '''
+    '''Implements all of functionalities of DataSet but it is not singleton'''
     def __init__(self) -> None:
         self._data_set: pd.DataFrame|None = None 
         self._previous_data_set : pd.DataFrame|None = None 
+        self._name: str|None = None
         self.age:int = 0
 
-    def load_data(self,data_path:str,separator:str = ';') -> None:
-        self._data_set = pd.read_csv(data_path,sep=separator)
-
-    def save_data(self,data_path:str,separator:str = ';') -> None:
-        self._data_set.to_csv(data_path,sep= separator)
+    def load_data(self,data_schema:DatasetSchema) -> None:
+        '''Loads DataFrame from DatasetSchema object'''
+        self._data_set = pd.DataFrame({column.name: pd.Series(column.values,dtype = float if column.type == DataType.NUMERICAL else str) for column in data_schema.variables})
 
     @property
     def data(self) -> pd.DataFrame:
+        '''Property to get DataFrame with going back mechanism'''
         return self._data_set
     
     @data.setter
@@ -28,17 +27,20 @@ class DataSetImplementation:
         self._data_set = new_data
 
     def get_types(self) -> pd.Series:
+        '''Returns types of each column'''
         return self._data_set.dtypes
     
     def get_info(self) -> pd.Series:
+        '''Returns short summary of data'''
         return self._data_set.describe(include='all')
     
     def get_head(self,rows:int = 10) -> pd.DataFrame:
+        '''Returns first "rows" rows of data '''
         return self._data_set.head(n = rows)
     
 
 class DataSet:
-
+    '''Singleton version of DataSetImplementation'''
     _impl:DataSetImplementation = None
 
     def __new__(cls,*args,**kwargs) -> DataSetImplementation:

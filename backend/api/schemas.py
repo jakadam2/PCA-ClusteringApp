@@ -49,14 +49,17 @@ class Column(BaseModel):
     values: list[float | int | bool | str | datetime.datetime]
 
 
-# TODO add from dataframe method
 class DatasetSchema(BaseModel):
     name: str
     variables: list[Column]
 
     @staticmethod
     def from_data_frame(data: DataFrame) -> 'DatasetSchema':
-        return DatasetSchema()
+        variables = [Column(name = column_name,
+                            type = DataType.CATEGORICAL if data[column_name].dtype == 'object' else DataType.NUMERICAL,
+                            values = data[column_name].to_list()) 
+                            for column_name in data.columns]
+        return DatasetSchema(name='from data_frame',variables=variables)
 
 
 DataTypeAdapter = TypeAdapter(DataType)

@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-from data_type import DataType
-from normalization import NumNormType, CatNormType
+from backend.data_type import DataType
+from backend.normalization import NumNormType, CatNormType
 
 
 class DataTransformer:
