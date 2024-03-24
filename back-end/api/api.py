@@ -4,6 +4,7 @@ from fastapi import APIRouter, Query
 from fastapi.responses import Response
 
 from backend.api.schemas import DatasetSchema, UpdateColumnNames, UpdateColumnTypes, Graph, NormalizationType
+from backend.clustering import Clustering, ClusteringMethod
 from backend.data_set import DataSet
 from backend.data_transformer import DataTransformer
 from backend.data_type import DataType
@@ -30,12 +31,14 @@ async def get_head(rows: Annotated[int, Query(gt=1)]):
 
 @router.put("/dataset/columns_names")
 async def update_columns_names(input_schema: UpdateColumnNames):
-    DataTransformer.rename(DataSet().data, input_schema.mapping)
+    transformed_data = DataTransformer.rename(DataSet().data, input_schema.mapping)
+    DataSet().data = transformed_data
 
 
 @router.put("/dataset/columns_types")
 async def update_columns_types(input_schema: UpdateColumnTypes):
-    DataTransformer.change_types(DataSet().data, input_schema.mapping)
+    transformed_data = DataTransformer.change_types(DataSet().data, input_schema.mapping)
+    DataSet().data = transformed_data
 
 
 @router.get("/pca/graph", response_model=Graph)
@@ -44,7 +47,7 @@ async def get_components_graph():
     return Response(graph.getvalue(), media_type='image/png')
 
 
-@router.get('pca/transform', response_model=DatasetSchema)
+@router.get('/pca/transform', response_model=DatasetSchema)
 async def get_pca():
     transformed_data = PCA.transform(DataSet().data, DataSet().age)
     return DatasetSchema.from_data_frame(transformed_data)
@@ -65,7 +68,7 @@ async def get_normalization_methods():
 @router.post("/normalization")
 async def perform_normalization(normalizations: list[NormalizationType]):
     methods = [normalization.name for normalization in normalizations]
-    DataTransformer.normalize(DataSet().data, methods)
+    DataSet().data = DataTransformer.normalize(DataSet().data, methods)
 
 
 @router.get("/data_types", response_model=list[DataType])
@@ -73,11 +76,12 @@ async def get_data_types():
     return list(DataType)
 
 
-@router.post("/clustering")
-async def post_clustering():
-    ...
+@router.get("/clustering/graph")
+async def perform_clustering(method: ClusteringMethod):
+    graph = Clustering.perform_clustering(DataSet().data, method)
+    return Response(graph.getvalue(), media_type='image/png')
 
 
-@router.get("/clustering", response_model=Graph)
+@router.get("/clustering/methods", response_model=list[ClusteringMethod])
 async def get_clustering():
-    ...
+    return Clustering.get_clustering_methods()
