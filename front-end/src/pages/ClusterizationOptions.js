@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DataCheckbox from "../components/DataCheckbox";
 import NewPageButton from "../components/buttons/NewPageButton";
-import { navigationButtonStyle } from "../common/styles";
+import MenuButton from "../components/buttons/MenuButton";
 
 const ClusterizationOptions = () => {
   const [possible, setPossible] = useState(true);
@@ -42,12 +42,7 @@ const ClusterizationOptions = () => {
           </div>
         )}
         <div className="left-0 right-0 flex justify-center items-center">
-          <button
-            className={navigationButtonStyle}
-            onClick={() => navigate("/menu")}
-          >
-            <span className="">&#129152; Wróć </span>
-          </button>
+          <MenuButton />
           &nbsp;&nbsp;&nbsp;
           <NewPageButton
             path={"/clusterization-visualization"}

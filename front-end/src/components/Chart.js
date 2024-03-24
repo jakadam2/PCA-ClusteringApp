@@ -1,7 +1,7 @@
 import React from "react";
 import { inactiveButtonStyle } from "../common/styles";
 
-const MainPCAComponentsVisualization = () => {
+const Chart = () => {
   return (
     <div className="relative w-[100%] left-0 right-0 justify-center items-center">
       <img
@@ -18,4 +18,4 @@ const MainPCAComponentsVisualization = () => {
   );
 };
 
-export default MainPCAComponentsVisualization;
+export default Chart;
