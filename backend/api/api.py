@@ -1,5 +1,7 @@
 from typing import Annotated
 
+import pandas as pd
+
 from fastapi import APIRouter, Query
 from fastapi.responses import Response
 
@@ -13,8 +15,10 @@ router = APIRouter(prefix="/api")
 
 
 @router.post("/file")
-async def post_dataset(dataset: DatasetSchema):
-    DataSet().load_data(dataset)
+async def post_dataset():
+# async def post_dataset(dataset:DatasetSchema):
+    #TODO: work on sent files
+    DataSet().data=pd.read_csv("./test_data.csv", sep=";")
 
 
 @router.get("/file", response_model=DatasetSchema)

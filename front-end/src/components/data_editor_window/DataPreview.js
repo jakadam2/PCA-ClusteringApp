@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import Papa from "papaparse";
-import { inactiveButtonStyle } from "../../common/styles";
+import { useNavigate } from "react-router-dom";
+import { defaultButtonStyle, inactiveButtonStyle } from "../../common/styles";
 
 const DataPreview = () => {
   const [data, setData] = useState([]);
+  const navigate = useNavigate();
 
   // TODO - upload file from backend
   // currently loading from disk sample/data.csv
@@ -37,6 +39,7 @@ const DataPreview = () => {
   const handleSavingChanges = () => {
     // TODO - implement sending header name and data type changes to back
     // send changes that are kept in context
+    navigate("/save-file");
     console.log("Saving...");
   };
 
@@ -108,7 +111,7 @@ const DataPreview = () => {
         </table>
 
         <div className="absolute bottom-5 right-0">
-          <button onClick={handleSavingChanges} className={inactiveButtonStyle}>
+          <button onClick={handleSavingChanges} className={defaultButtonStyle}>
             Zapisz zmiany
           </button>
         </div>

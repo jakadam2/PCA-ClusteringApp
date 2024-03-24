@@ -36,7 +36,7 @@ import datetime
 
 from fastapi import File
 from pandas import DataFrame
-from pydantic import BaseModel, TypeAdapter
+from pydantic import BaseModel
 
 from backend.clustering import ClusteringMethod
 from backend.data_type import DataType
@@ -62,15 +62,11 @@ class DatasetSchema(BaseModel):
         return DatasetSchema(name='from data_frame',variables=variables)
 
 
-DataTypeAdapter = TypeAdapter(DataType)
-
 
 class NormalizationType(BaseModel):
     name: CatNormType | NumNormType
     compatible_types: list[DataType]
 
-
-ClusteringAlgorithm = TypeAdapter(ClusteringMethod)
 
 
 class Graph(BaseModel):

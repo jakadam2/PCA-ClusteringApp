@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useDropzone } from 'react-dropzone';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDropzone } from "react-dropzone";
 
 const FileExplorer = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -12,63 +12,71 @@ const FileExplorer = () => {
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
-    multiple: false
+    multiple: false,
   });
 
   const handleStartWork = async () => {
     if (selectedFile) {
-        console.log(selectedFile);
-        const formData = new FormData();
-        formData.append('file', selectedFile, selectedFile.name);
+      const formData = new FormData();
+      formData.append("dataset", selectedFile, selectedFile.name);
 
-        // TODO: check if it's even working correctly
-        // POST file to backend
-        try {
-            const response = await fetch('http://localhost:8080/file', {
-                method: 'POST',
-                body: formData
-            });
+      // TODO: check if it's even working correctly
+      // TODO: send files!
+      // POST file to backend
+      try {
+        const response = await fetch("http://localhost:8080/api/file", {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        });
 
-            if (!response.ok) {
-                throw new Error(`Error: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            console.log('File uploaded successfully', data);
-
-            navigate('/data-type-edit');
-          } catch (error) {
-            console.error('Error uploading file:', error);
-            alert('Error uploading file.');
-
-            // TODO: delete this after connecting to backend
-            navigate('/data-type-edit');
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
         }
 
+        const data = await response.json();
+        console.log("File uploaded successfully", data);
+
+        navigate("/data-type-edit");
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        alert("Error uploading file.");
+      }
     } else {
-      console.log('No file selected.');
+      console.log("No file selected.");
     }
   };
 
   return (
     <div className="relative min-h-72">
       <p className="my-5">Ścieżka do pliku:</p>
-      <div {...getRootProps({ className: 'dropzone' })} className="bg-zinc-50 px-10 py-5 border rounded border-slate-200 
-            hover:border-dotted hover:border-slate-500 cursor-pointer flex items-center justify-center">
+      <div
+        {...getRootProps({ className: "dropzone" })}
+        className="bg-zinc-50 px-10 py-5 border rounded border-slate-200 
+            hover:border-dotted hover:border-slate-500 cursor-pointer flex items-center justify-center"
+      >
         <input {...getInputProps()} />
-        <p className="text-gray-500 text-center">Możesz przeciągnąć i upuścić plik tutaj, lub kliknij by wybrać.</p>
+        <p className="text-gray-500 text-center">
+          Możesz przeciągnąć i upuścić plik tutaj, lub kliknij by wybrać.
+        </p>
       </div>
       {selectedFile && (
         <div>
-            <p className="text-gray-500 text-sm">Wybrany plik: {selectedFile.name}</p>
-            <div className="absolute bottom-0 right-0">
-              <button onClick={handleStartWork}
-                  className=" text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 
+          <p className="text-gray-500 text-sm">
+            Wybrany plik: {selectedFile.name}
+          </p>
+          <div className="absolute bottom-0 right-0">
+            <button
+              onClick={handleStartWork}
+              className=" text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 
                   font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 
-                  focus:outline-none dark:focus:ring-blue-800">
-                      Zacznij pracę
-              </button>
-            </div>
+                  focus:outline-none dark:focus:ring-blue-800"
+            >
+              Zacznij pracę
+            </button>
+          </div>
         </div>
       )}
     </div>

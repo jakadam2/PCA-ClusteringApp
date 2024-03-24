@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { defaultButtonStyle, inactiveButtonStyle } from "../common/styles";
+import { defaultButtonStyle } from "../common/styles";
 
 const MainMenu = () => {
   const navigate = useNavigate();
@@ -8,6 +8,7 @@ const MainMenu = () => {
   const handleSavingChanges = () => {
     // TODO - implement sending header name and data type changes to back
     // send changes that are kept in context
+    navigate("/save-file");
     console.log("Saving...");
   };
 
@@ -33,7 +34,7 @@ const MainMenu = () => {
         <div className="absolute bottom-0 left-0 right-0 flex justify-center items-center">
           <button
             onClick={handleSavingChanges}
-            className={inactiveButtonStyle}
+            className={defaultButtonStyle}
             style={{ margin: "auto" }}
           >
             Zapisz zmiany
