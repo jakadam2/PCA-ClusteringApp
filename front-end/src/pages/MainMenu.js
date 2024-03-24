@@ -1,6 +1,6 @@
-import React, { Fragment } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { defaultButtonStyle } from "../common/styles";
+import { defaultButtonStyle, inactiveButtonStyle } from "../common/styles";
 
 const MainMenu = () => {
   const navigate = useNavigate();
@@ -33,9 +33,7 @@ const MainMenu = () => {
         <div className="absolute bottom-0 left-0 right-0 flex justify-center items-center">
           <button
             onClick={handleSavingChanges}
-            className=" text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 
-            font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 
-            focus:outline-none dark:focus:ring-red-800"
+            className={inactiveButtonStyle}
             style={{ margin: "auto" }}
           >
             Zapisz zmiany
