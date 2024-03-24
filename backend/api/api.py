@@ -31,12 +31,14 @@ async def get_head(rows: Annotated[int, Query(gt=1)]):
 
 @router.put("/dataset/columns_names")
 async def update_columns_names(input_schema: UpdateColumnNames):
-    DataTransformer.rename(DataSet().data, input_schema.mapping)
+    transformed_data = DataTransformer.rename(DataSet().data, input_schema.mapping)
+    DataSet().data = transformed_data
 
 
 @router.put("/dataset/columns_types")
 async def update_columns_types(input_schema: UpdateColumnTypes):
-    DataTransformer.change_types(DataSet().data, input_schema.mapping)
+    transformed_data = DataTransformer.change_types(DataSet().data, input_schema.mapping)
+    DataSet().data = transformed_data
 
 
 @router.get("/pca/graph", response_model=Graph)

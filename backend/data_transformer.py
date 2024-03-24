@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from pandas import DataFrame
+from pandas import DataFrame, Series
 
 from backend.data_type import DataType
 from backend.normalization import NumNormType, CatNormType
@@ -14,15 +14,34 @@ class DataTransformer:
         dataset = dataset.copy()
 
         for column_name, new_type in mapping.items():
-            if new_type == DataType.NUMERICAL:
-                if dataset[column_name].dtype == bool:
-                    dataset[column_name] = dataset[column_name].astype(int)
-                else:
-                    dataset[column_name] = pd.to_numeric(dataset[column_name], errors="coerce")
-            else:
-                dataset[column_name] = pd.Categorical(dataset[column_name])
+            match new_type:
+                case DataType.NUMERICAL:
+                    dataset[column_name] = DataTransformer._to_numeric(dataset[column_name])
+                case DataType.CATEGORICAL:
+                    dataset[column_name] = DataTransformer._to_categorical(dataset[column_name])
+                case DataType.DATETIME:
+                    dataset[column_name] = DataTransformer._to_datetime_unix(dataset[column_name])
 
         return dataset
+
+    @staticmethod
+    def _to_numeric(column: Series):
+        print(type(column))
+        if column.dtype == bool:
+            return column.astype(int)
+        else:
+            return pd.to_numeric(column, errors="coerce")
+
+    @staticmethod
+    def _to_categorical(column: Series):
+        return pd.Categorical(column)
+
+    @staticmethod
+    def _to_datetime_unix(column: Series):
+        if column.dtype == object:
+            return pd.to_datetime(column).map(pd.Timestamp.timestamp)
+
+
 
     @staticmethod
     def rename(dataset: DataFrame, mapping: dict[str, str]) -> DataFrame:
@@ -61,6 +80,11 @@ class DataTransformer:
         return dataset.select_dtypes(include=np.number).columns
 
     @staticmethod
+    def get_datetime_columns(dataset: DataFrame):
+        """Returns list of columns solely containing datetime data."""
+        return dataset.select_dtypes(include='datetime').columns
+
+    @staticmethod
     def get_categorical_columns(dataset: DataFrame):
         """Returns list of columns solely containing categorical(non numeric) data."""
         return dataset.columns.difference(DataTransformer.get_numerical_columns(dataset))
@@ -74,6 +98,6 @@ class DataTransformer:
             response.append({"name": method_type, "compatible_types": [DataType.CATEGORICAL]})
 
         for method_type in NumNormType:
-            response.append({"name": method_type, "compatible_types": [DataType.NUMERICAL]})
+            response.append({"name": method_type, "compatible_types": [DataType.NUMERICAL, DataType.DATETIME]})
 
         return response
