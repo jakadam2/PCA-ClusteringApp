@@ -1,13 +1,11 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import DataCheckbox from "../components/DataCheckbox";
+import DataCheckbox from "../components/clusterization/DataCheckbox";
 import NewPageButton from "../components/buttons/NewPageButton";
 import MenuButton from "../components/buttons/MenuButton";
 
 const ClusterizationOptions = () => {
   const [possible, setPossible] = useState(true);
   //TODO setPossible only if clustrization with chosen variables is possible
-  const navigate = useNavigate();
 
   return (
     <div className="relative h-[450px]">

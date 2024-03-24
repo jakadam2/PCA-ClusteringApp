@@ -1,7 +1,7 @@
 import React from "react";
 import Chart from "../components/Chart";
 import MenuButton from "../components/buttons/MenuButton";
-import Statistics from "../components/Statistics";
+import Statistics from "../components/clusterization/Statistics";
 
 const ClusterizationVisualization = () => {
   return (
