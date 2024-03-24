@@ -2,7 +2,11 @@ import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import FileExplorer from './components/file_utils/FileExplorer';
 import DataTypeEditPage from './pages/DataTypeEditPage';
+import MainMenu from './pages/MainMenu';
 import FileSaver from './components/file_utils/FileSaver';
+import MainPCAComponentsVisualization from './pages/MainPCAComponentsVisualization';
+import ClusterizationOptions from './pages/ClusterizationOptions';
+import ClusterizationVisualization from './pages/ClusterizationVisualization';
 
 function App() {
   return (
@@ -10,8 +14,12 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<FileExplorer/>} />
+          <Route path="/menu" element={<MainMenu/>} />
           <Route path="/data-type-edit" element={<DataTypeEditPage/>} />
           <Route path="/save-file" element={<FileSaver/>} />
+          <Route path="/pca-main-components" element={<MainPCAComponentsVisualization/>} />
+          <Route path="/clusterization-options" element={<ClusterizationOptions/>} />
+          <Route path="/clusterization-visualization" element={<ClusterizationVisualization/>} />
         </Routes>
       </Router>
     </div>
