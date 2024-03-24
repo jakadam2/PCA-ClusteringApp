@@ -37,7 +37,8 @@ const FileExplorer = () => {
             // TODO: check if it's even working correctly
             // POST file to backend
             try {
-                const response = await fetch('http://localhost:8080/file', {
+                const response = await fetch('http://localhost:8000/api/file', {
+                    // mode: 'no-cors',
                     method: 'POST',
                     body: formData
                 });

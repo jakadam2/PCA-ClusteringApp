@@ -1,6 +1,7 @@
 from typing import Annotated
+import pandas as pd
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, UploadFile, File
 from fastapi.responses import Response
 
 from backend.api.schemas import DatasetSchema, UpdateColumnNames, UpdateColumnTypes, Graph, NormalizationType
@@ -14,8 +15,9 @@ router = APIRouter(prefix="/api")
 
 
 @router.post("/file")
-async def post_dataset(dataset: DatasetSchema):
-    DataSet().load_data(dataset)
+async def post_dataset(file: UploadFile = File(...)):
+    df = pd.read_csv(file.file).head()
+    print(df)
 
 
 @router.get("/file", response_model=DatasetSchema)
