@@ -1,20 +1,31 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { navigationButtonStyle } from "../../common/styles";
 
-const NewPageButton = ({ path }) => {
-    const navigate = useNavigate();
-  
-    const handleClick = () => {
+const NewPageButton = ({ path, isActive = true }) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    if (isActive) {
       navigate(path);
-    };
-  
-    return (
-      <button 
-        className="flex items-center justify-center px-4 py-2 bg-blue-700 text-white rounded-lg shadow-md hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800 focus:ring-opacity-50"
-        onClick={handleClick}>
-            <span className="">&#10132;  </span>
-      </button>
-    );
+    }
   };
+
+  return (
+    <button
+      className={navigationButtonStyle}
+      style={
+        isActive
+          ? {}
+          : {
+              backgroundColor: "gray",
+            }
+      }
+      onClick={handleClick}
+    >
+      <span className="">&#129154; </span>
+    </button>
+  );
+};
 
 export default NewPageButton;
