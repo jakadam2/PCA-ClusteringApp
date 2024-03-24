@@ -18,6 +18,7 @@ router = APIRouter(prefix="/api")
 async def post_dataset(file: UploadFile = File(...)):
     df = pd.read_csv(file.file, sep=';')
     DataSet()._data_set = df
+    print(df.head())
 
 
 @router.get("/file", response_model=DatasetSchema)
@@ -27,7 +28,6 @@ async def get_dataset():
 
 @router.get("/dataset", response_model=DatasetSchema)
 async def get_head(rows: Annotated[int, Query(gt=1)]):
-    print(f'get head, rows={rows}')
     head = DataSet().get_head(rows).fillna('')
     return DatasetSchema.from_data_frame(head)
 

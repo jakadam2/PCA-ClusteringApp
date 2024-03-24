@@ -1,4 +1,4 @@
 *.ipynb
-*.csv
+# *.csv
 __pycache__
 venv
