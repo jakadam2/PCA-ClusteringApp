@@ -30,25 +30,15 @@ class DataTransformer:
         return dataset.rename(mapper=mapping)
 
     @staticmethod
-    def normalize(
-            dataset: DataFrame,
-            method_for_numerical: NumNormType | None = None,
-            method_for_categorical: CatNormType | None = None
-    ) -> DataFrame:
-        """Normalizes data according to the chosen methods, if none then no normalization is being done."""
+    def normalize(dataset: DataFrame, methods: list[NumNormType | CatNormType]) -> DataFrame:
+        """Normalizes data according to the chosen methods, in the same order as in given list."""
         dataset = dataset.copy()
-
-        match method_for_numerical:
-            case NumNormType.STANDARDIZATION:
-                dataset = DataTransformer.standardize(dataset)
-            case None:
-                ...
-
-        match method_for_categorical:
-            case CatNormType.ONE_HOT:
-                dataset = DataTransformer.one_hot_encoding(dataset)
-            case None:
-                ...
+        for method in methods:
+            match method:
+                case NumNormType.STANDARDIZATION:
+                    dataset = DataTransformer.standardize(dataset)
+                case CatNormType.ONE_HOT:
+                    dataset = DataTransformer.one_hot_encoding(dataset)
 
         return dataset
 

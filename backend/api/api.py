@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Query
-from fastapi.responses import FileResponse,Response
+from fastapi.responses import Response
 
 from backend.api.schemas import DatasetSchema, UpdateColumnNames, UpdateColumnTypes, Graph, NormalizationType
 from backend.data_set import DataSet
@@ -40,26 +40,32 @@ async def update_columns_types(input_schema: UpdateColumnTypes):
 
 @router.get("/pca/graph", response_model=Graph)
 async def get_components_graph():
-    graph = PCA.components_graph(DataSet().data,DataSet().age)
+    graph = PCA.components_graph(DataSet().data, DataSet().age)
     return Response(graph.getvalue(), media_type='image/png')
 
 
-@router.get('pca/transform',response_model=DatasetSchema)
+@router.get('pca/transform', response_model=DatasetSchema)
 async def get_pca():
-    transformed_data = PCA.transform(DataSet().data,DataSet().age)
+    transformed_data = PCA.transform(DataSet().data, DataSet().age)
     return DatasetSchema.from_data_frame(transformed_data)
 
 
 @router.put('/pca/transform')
 async def perform_pca():
-    transformed_data = PCA.transform(DataSet().data,DataSet().age)
+    transformed_data = PCA.transform(DataSet().data, DataSet().age)
     DataSet().data = transformed_data
 
 
-@router.get("/normalization_methods", response_model=list[NormalizationType])
+@router.get("/normalization/methods", response_model=list[NormalizationType])
 async def get_normalization_methods():
     methods = DataTransformer.get_normalization_methods()
     return [NormalizationType.model_validate(method) for method in methods]
+
+
+@router.post("/normalization")
+async def perform_normalization(normalizations: list[NormalizationType]):
+    methods = [normalization.name for normalization in normalizations]
+    DataTransformer.normalize(DataSet().data, methods)
 
 
 @router.get("/data_types", response_model=list[DataType])
