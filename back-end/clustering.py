@@ -1,6 +1,7 @@
 import io
-from enum import StrEnum
+import seaborn as sns
 
+from enum import StrEnum
 from numpy import ndarray
 from pandas import DataFrame
 from sklearn.cluster import estimate_bandwidth, MeanShift, AffinityPropagation, DBSCAN
@@ -41,6 +42,9 @@ class Clustering:
     @staticmethod
     def perform_clustering(data: DataFrame, method: ClusteringMethod = ClusteringMethod.MEAN_SHIFT) -> io.BytesIO:
         """Performs chosen clustering operation and returns plot of clusters."""
+        if data.isna().values.any():
+            data.dropna(axis='rows', inplace=True)
+
         if method not in Clustering.clustering_methods:
             raise ValueError(f"Clustering method {method} not recognized.")
 
@@ -52,7 +56,15 @@ class Clustering:
         """Produces plot of based on given data and it's labels representing clusters."""
         reduced_data = Clustering.reduce_dimensionality(data)
 
-        plt.scatter(reduced_data[:, 0], reduced_data[:, 1], c=clusters, cmap='viridis')
+        sns.jointplot(x=reduced_data.iloc[:, 0], y=reduced_data.iloc[:, 1],
+                      hue=clusters, kind='scatter', legend=False,
+                      )
+
+        plt.xticks(visible=False)
+        plt.yticks(visible=False)
+
+        plt.xlabel("")
+        plt.ylabel("")
 
         bytes_image = io.BytesIO()
         plt.savefig(bytes_image, format='png')
@@ -60,16 +72,14 @@ class Clustering:
         return bytes_image
 
     @staticmethod
-    def reduce_dimensionality(data: DataFrame) -> ndarray:
+    def reduce_dimensionality(data: DataFrame) -> DataFrame:
         """Reduces data two 2 dimensions."""
         if len(data.columns) > 50:  # somewhat arbitrary number, taken from scikit-learn guide on t-SNE
             pca = PCA(n_components=50)
-            reduced_data = pca.fit_transform(data)
-        else:
-            reduced_data = data.to_numpy()
+            data = pca.fit_transform(data)
 
         tsne = TSNE(n_components=2)
-        return tsne.fit_transform(reduced_data)
+        return tsne.fit_transform(data)
 
     @staticmethod
     def get_clustering_methods() -> list[ClusteringMethod]:
