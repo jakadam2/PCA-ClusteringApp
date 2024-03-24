@@ -1,6 +1,7 @@
 import io
-from enum import StrEnum
+import seaborn as sns
 
+from enum import StrEnum
 from numpy import ndarray
 from pandas import DataFrame
 from sklearn.cluster import estimate_bandwidth, MeanShift, AffinityPropagation, DBSCAN
@@ -55,7 +56,15 @@ class Clustering:
         """Produces plot of based on given data and it's labels representing clusters."""
         reduced_data = Clustering.reduce_dimensionality(data)
 
-        plt.scatter(reduced_data.iloc[:, 0], reduced_data.iloc[:, 1], c=clusters, cmap='viridis')
+        sns.jointplot(x=reduced_data.iloc[:, 0], y=reduced_data.iloc[:, 1],
+                      hue=clusters, kind='scatter', legend=False,
+                      )
+
+        plt.xticks(visible=False)
+        plt.yticks(visible=False)
+
+        plt.xlabel("")
+        plt.ylabel("")
 
         bytes_image = io.BytesIO()
         plt.savefig(bytes_image, format='png')
