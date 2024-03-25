@@ -1,4 +1,4 @@
-"""
+"""File
 // DTOs
 variable = {
     "id":int,
@@ -38,9 +38,9 @@ from fastapi import File
 from pandas import DataFrame
 from pydantic import BaseModel, TypeAdapter
 
-from backend.clustering import ClusteringMethod
-from backend.data_type import DataType
-from backend.normalization import CatNormType, NumNormType
+from source.clustering import ClusteringMethod
+from source.data_type import DataType
+from source.normalization import CatNormType, NumNormType
 
 
 class Column(BaseModel):

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
-from backend.api.schemas import DatasetSchema
-from backend.data_type import DataType
+from source.api.schemas import DatasetSchema
+from source.data_type import DataType
 
 class DataSetImplementation:
     '''Implements all of functionalities of DataSet but it is not singleton'''

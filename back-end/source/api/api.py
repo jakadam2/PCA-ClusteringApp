@@ -4,12 +4,12 @@ import pandas as pd
 from fastapi import APIRouter, Query, UploadFile, File
 from fastapi.responses import Response
 
-from backend.api.schemas import DatasetSchema, UpdateColumnNames, UpdateColumnTypes, Graph, NormalizationType
-from backend.clustering import Clustering, ClusteringMethod
-from backend.data_set import DataSet
-from backend.data_transformer import DataTransformer
-from backend.data_type import DataType
-from backend.pca import PCA
+from source.api.schemas import DatasetSchema, UpdateColumnNames, UpdateColumnTypes, Graph, NormalizationType
+from source.clustering import Clustering, ClusteringMethod
+from source.data_set import DataSet
+from source.data_transformer import DataTransformer
+from source.data_type import DataType
+from source.pca import PCA
 
 router = APIRouter(prefix="/api")
 
