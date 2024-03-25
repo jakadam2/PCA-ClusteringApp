@@ -16,7 +16,7 @@ router = APIRouter(prefix="/api")
 
 @router.post("/file")
 async def post_dataset(file: UploadFile = File(...)):
-    df = pd.read_csv(file.file, sep=';')
+    df = pd.read_csv(file.file, sep=';', decimal=",")
     DataSet()._data_set = df
     print(df.head())
 
