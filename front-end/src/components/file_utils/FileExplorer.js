@@ -56,7 +56,8 @@ const FileExplorer = () => {
                 alert('Error uploading file.');
 
                 // TODO: delete this after connecting to backend
-                navigate('/data-type-edit');
+                window.location.reload();
+                // navigate('/data-type-edit');
             }
 
         } else {
