@@ -91,3 +91,16 @@ return image with string describing it
 
 ### GET
 return list of cluesting methods
+
+## /pca/graph
+
+### GET
+return graph which shows importance of each feature after PCA
+
+## /pca/transform
+
+### GET
+return data after perform PCA but it doesn't change original dataset
+
+### PUT
+perform PCA on original data and change it

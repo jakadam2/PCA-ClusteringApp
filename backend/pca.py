@@ -4,6 +4,8 @@ from matplotlib import pyplot as plt
 from backend.data_set import DataSet
 import io
 import pandas as pd
+import numpy as np
+
 
 class PCA:
     '''Class performs all PCA operations using PCA class from sklearn and caching'''
@@ -13,14 +15,14 @@ class PCA:
     
     @classmethod
     def _fit(cls,data_set:pd.DataFrame) -> None:
-        cls._pca.fit(data_set)
+        cls._pca.fit(data_set.select_dtypes(include=np.number).notnull())
 
     @classmethod
     def transform(cls,data_set:pd.DataFrame,age:int = -2) -> pd.DataFrame:
         '''Fit PCA transform if needed and returns transformed data'''
         if age != cls.current_age:
             cls._fit(data_set)
-        return cls._pca.transform(data_set)
+        return cls._pca.transform(data_set.select_dtypes(include=np.number).notnull())
 
     @classmethod
     def components_graph(cls,data_set:pd.DataFrame,age:int = -2,format = 'jpg') -> io.BytesIO:
