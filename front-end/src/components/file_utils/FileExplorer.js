@@ -37,17 +37,17 @@ const FileExplorer = () => {
       // TODO: check if it's even working correctly
       // POST file to backend
       try {
-        await fetch("http://localhost:8000/api/file", {
-          mode: "no-cors",
+        const response = await fetch("http://localhost:8000/api/file", {
+          // mode: "no-cors",
           method: "POST",
           body: formData,
         });
 
         //TODO: handle !response.ok - teraz sie wywala i nawet jak wszystko jest ok to response.ok=false
-        // if (!response.ok) {
-        //   console.log(response.ok);
-        //   throw new Error(`Error: ${response.statusText}`);
-        // }
+        if (!response.ok) {
+          console.log(response.ok);
+          throw new Error(`Error: ${response.statusText}`);
+        }
 
         navigate("/data-type-edit");
       } catch (error) {

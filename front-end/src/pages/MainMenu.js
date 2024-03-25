@@ -5,10 +5,10 @@ import { defaultButtonStyle, inactiveButtonStyle } from "../common/styles";
 const MainMenu = () => {
   const navigate = useNavigate();
 
-  const handleSavingChanges = () => {
+  const handleDataPreview = () => {
     // TODO - implement sending header name and data type changes to back
     // send changes that are kept in context
-    console.log("Saving...");
+    console.log("DataPreview...");
   };
 
   return (
@@ -32,11 +32,11 @@ const MainMenu = () => {
         </div>
         <div className="absolute bottom-0 left-0 right-0 flex justify-center items-center">
           <button
-            onClick={handleSavingChanges}
+            onClick={handleDataPreview}
             className={inactiveButtonStyle}
             style={{ margin: "auto" }}
           >
-            Zapisz zmiany
+            Pokaż aktualne dane
           </button>
         </div>
       </div>
