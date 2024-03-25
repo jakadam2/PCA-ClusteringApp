@@ -8,6 +8,7 @@ from sklearn.cluster import estimate_bandwidth, MeanShift, AffinityPropagation, 
 from matplotlib import pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
+from source.data_transformer import DataTransformer
 
 
 class ClusteringMethod(StrEnum):
@@ -42,6 +43,7 @@ class Clustering:
     @staticmethod
     def perform_clustering(data: DataFrame, method: ClusteringMethod = ClusteringMethod.MEAN_SHIFT) -> io.BytesIO:
         """Performs chosen clustering operation and returns plot of clusters."""
+        data=data[DataTransformer.get_numerical_columns(data)]
         if data.isna().values.any():
             data.dropna(axis='rows', inplace=True)
 
