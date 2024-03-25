@@ -11,20 +11,19 @@ const DataPreview = () => {
     // TODO - upload file from backend
     // currently loading from disk sample/data.csv
     useEffect(() => {
-        fetch(`http://localhost:8000/api/dataset?rows=${ROWS}`)
+        const requestDataset = fetch(`http://localhost:8000/api/dataset?rows=${ROWS}`)
             .then(res => res.json())
-            .then(res => setData(res))
 
-        // fetch("/sample/data.csv")
-        //   .then((response) => response.text())
-        //   .then((csvText) => {
-        //     Papa.parse(csvText, {
-        //       complete: (result) => {
-        //         setData(result.data);
-        //       },
-        //       header: true,
-        //     });
-        //   });
+        const requestDatatypes = fetch(`http://localhost:8000/api/data_types`)
+            .then(res => res.json())
+
+        Promise.all([requestDataset, requestDatatypes])
+            .then(([dataset, datatypes]) => {
+                setData({
+                    'dataset': dataset,
+                    'datatypes': datatypes
+                })
+            })
     }, []);
 
     const changeVariableName = (varName, columnId) => {
@@ -47,13 +46,13 @@ const DataPreview = () => {
         console.log("Saving...");
     };
 
-    const headers = data['variables'] !== undefined ? data['variables'].map(variable => variable['name']) : []
+    const headers = data['dataset'] !== undefined ? data['dataset']['variables'].map(variable => variable['name']) : []
     const values = [];
-    if (data['variables'] !== undefined) {
+    if (data['dataset'] !== undefined) {
         for (let i = 0; i < ROWS; i++) {
             values.push([]);
         }
-        for (let variable of data['variables']) {
+        for (let variable of data['dataset']['variables']) {
             let i = 0
             for (let value of variable['values']) {
                 values[i].push(value)
@@ -61,7 +60,7 @@ const DataPreview = () => {
             }
         }
     }
-    const dataTypes = ["Numerical", "Categorical", "Text"]; // Example data types, to be extracted from back along with data
+    const dataTypes = data['datatypes'] !== undefined ? data['datatypes'] : []
 
     return (
         <div className="relative h-96">
