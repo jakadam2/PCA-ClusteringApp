@@ -6,3 +6,4 @@ pydantic==2.6.4
 scikit_learn==1.4.1.post1
 seaborn==0.13.2
 uvicorn==0.29.0
+python-multipart==0.0.9
