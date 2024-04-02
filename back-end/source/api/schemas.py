@@ -33,12 +33,13 @@ clusteringDescription = {
     }
 """
 import datetime
-from typing import List, Union, Dict
+from typing import List, Union, Dict, Any
 
 from fastapi import File
 from pandas import DataFrame
 from pydantic import BaseModel, Field
 
+from source.clustering.clustering import ClusteringMethod
 from source.data_type import DataType
 from source.normalization import CatNormType, NumNormType
 
@@ -145,6 +146,25 @@ class UpdateColumnTypes(BaseModel):
                 "mapping": {
                     "column_name1": "numerical",
                     "column_name2": "categorical"
+                }
+            }
+        }
+
+
+class ClusteringDto(BaseModel):
+    method: ClusteringMethod = Field(..., description="Name of the clustering method.")
+    columns: list[str] = Field(..., description="A list of names of columns on which "
+                                                "the clustering method will be performed.")
+    method_parameters: dict[str, Any] = Field(..., description="Parameters for the chosen clustering method.")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "method": "Mean-shift",
+                "columns": ["column_name1", "column_name2"],
+                "method_parameters": {
+                    "param_name1": 1.0,
+                    "param_name2": 0.5
                 }
             }
         }
