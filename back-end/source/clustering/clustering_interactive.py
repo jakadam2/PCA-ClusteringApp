@@ -23,7 +23,7 @@ class ClusteringInteractive(Clustering):
         fig = ClusteringInteractive.setup_figure()
         ClusteringInteractive.histogram(clusters, fig, 4, 1)
         ClusteringInteractive.cluster_plot(reduced_data, clusters, fig, 2, 1)
-        fig.show(config=ClusteringInteractive.get_configs())
+
         return go.FigureWidget(fig)
 
     @staticmethod
