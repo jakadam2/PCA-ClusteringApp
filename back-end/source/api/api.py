@@ -43,7 +43,7 @@ async def get_head(rows: Annotated[int, Query(gt=1)]):
     """
     ## Get the first 'n' rows of the dataset.
     """
-    head = DataSet().get_head(rows).fillna('')
+    head = DataSet().get_head(rows)
     return DatasetSchema.from_data_frame(head)
 
 
@@ -67,6 +67,7 @@ async def update_columns_types(input_schema: UpdateColumnTypes):
     displayed type of the column but slo tries to transform the data to the desired type.
     """
     transformed_data = DataTransformer.change_types(DataSet().data, input_schema.mapping)
+    print(transformed_data)
     DataSet().data = transformed_data
 
 
