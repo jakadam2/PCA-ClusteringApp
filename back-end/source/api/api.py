@@ -1,11 +1,13 @@
 from typing import Annotated
 import pandas as pd
 
-from fastapi import APIRouter, Query, UploadFile, File
+from fastapi import APIRouter, Query, UploadFile, File, HTTPException
 from fastapi.responses import Response
 
-from source.api.schemas import DatasetSchema, UpdateColumnNames, UpdateColumnTypes, Graph, NormalizationType
-from source.clustering import Clustering, ClusteringMethod
+from source.api.schemas import DatasetSchema, UpdateColumnNames, UpdateColumnTypes, Graph, NormalizationType, \
+    ClusteringDto
+from source.clustering.clustering import Clustering, ClusteringMethod
+from source.clustering.clustering_interactive import ClusteringInteractive
 from source.data_set import DataSet
 from source.data_transformer import DataTransformer
 from source.data_type import DataType
@@ -131,19 +133,42 @@ async def get_data_types():
     return list(DataType)
 
 
-@router.post("/clustering/graph", summary="Clustering graph")
-async def perform_clustering(method: ClusteringMethod):
+@router.post("/clustering/graph", summary="clustering graph")
+async def perform_clustering(input_schema: ClusteringDto):
     """
     ## Generate a clustering graph.
 
     Applies chosen clustering method to the data, and returns plot of clustering performed with the method.
     Possible methods can be found at `/clustering/methods`.
+    `columns` parameter should contain list of column names from the current active dataset on which clustering
+    will be performed.
     """
-    graph = Clustering.perform_clustering(DataSet().data, method)
-    return Response(graph.getvalue(), media_type='image/png')
+    if not set(input_schema.columns).issubset(DataSet().data.columns):
+        raise HTTPException(status_code=404, detail="Nonexistent columns provided")
+
+    chosen_columns = DataSet().data[input_schema.columns]
+    graph = ClusteringInteractive.perform_clustering(chosen_columns, input_schema.method, input_schema.method_parameters)
+    return Response(graph, media_type='text/html')
 
 
-@router.get("/clustering/methods", summary="Clustering methods", response_model=list[ClusteringMethod])
+@router.post("/clustering/clustering_tendency", summary="Clustering tendency")
+async def get_clustering_tendency(columns: list[str]):
+    """
+    ## Return a hopkins statistic.
+
+    Calculates a hopkins statistic for a chosen subset of the active dataset.
+    `columns` parameter should contain list of column names from the current active dataset no which clustering
+    will be performed.
+    """
+    if not set(columns).issubset(DataSet().data.columns):
+        print(DataSet().data.columns.isin(columns), columns, DataSet().data.columns)
+        raise HTTPException(status_code=404, detail="Nonexistent columns provided")
+
+    chosen_columns = DataSet().data[columns]
+    return Clustering.hopkins_statistic(chosen_columns)
+
+
+@router.get("/clustering/methods", summary="clustering methods", response_model=list[ClusteringMethod])
 async def get_clustering_methods():
     """
     ## List available clustering methods.
