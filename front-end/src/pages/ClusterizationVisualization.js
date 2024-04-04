@@ -3,7 +3,7 @@ import Chart from "../components/Chart";
 import MenuButton from "../components/buttons/MenuButton";
 import Statistics from "../components/clusterization/Statistics";
 
-const ClusterizationVisualization = () => {
+const ClusterizationVisualization = ({ algorithm, columns }) => {
   const imageUrl =
     "http://localhost:8000/api/clustering/graph?method=Mean-shift";
   const [img, setImg] = useState();
