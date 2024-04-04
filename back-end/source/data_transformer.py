@@ -41,8 +41,6 @@ class DataTransformer:
         if column.dtype == object:
             return pd.to_datetime(column).map(pd.Timestamp.timestamp)
 
-
-
     @staticmethod
     def rename(dataset: DataFrame, mapping: dict[str, str]) -> DataFrame:
         """Renames dataset's columns according to the given mapping."""
