@@ -8,7 +8,7 @@ from source.api.schemas import DatasetSchema, UpdateColumnNames, UpdateColumnTyp
     ClusteringDto
 from source.clustering.clustering import Clustering, ClusteringMethod
 from source.clustering.clustering_interactive import ClusteringInteractive
-from source.data_set import DataSet
+from source.data_set import DataSet, get_key
 from source.data_transformer import DataTransformer
 from source.data_type import DataType
 from source.pca import PCA
@@ -146,8 +146,14 @@ async def perform_clustering(input_schema: ClusteringDto):
     if not set(input_schema.columns).issubset(DataSet().data.columns):
         raise HTTPException(status_code=404, detail="Nonexistent columns provided")
 
-    chosen_columns = DataSet().data[input_schema.columns]
-    graph = ClusteringInteractive.perform_clustering(chosen_columns, input_schema.method, input_schema.method_parameters)
+    sub_dataset = DataSet().data[input_schema.columns]
+    dataset_key = get_key(DataSet().age, input_schema.columns)
+    graph = ClusteringInteractive.visualize_clustering(
+        sub_dataset,
+        dataset_key,
+        input_schema.method,
+        input_schema.method_parameters,
+    )
     return Response(graph, media_type='text/html')
 
 
@@ -161,7 +167,6 @@ async def get_clustering_tendency(columns: list[str]):
     will be performed.
     """
     if not set(columns).issubset(DataSet().data.columns):
-        print(DataSet().data.columns.isin(columns), columns, DataSet().data.columns)
         raise HTTPException(status_code=404, detail="Nonexistent columns provided")
 
     chosen_columns = DataSet().data[columns]

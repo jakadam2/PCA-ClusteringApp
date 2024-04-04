@@ -16,7 +16,7 @@ from source.plotting import get_colour_palette_rgba
 class ClusteringInteractive(Clustering):
 
     @staticmethod
-    def visualize_clustering(data: DataFrame, clusters: ndarray):
+    def create_plot(data: DataFrame, clusters: ndarray):
         """Produces plot of based on given data and it's labels representing clusters."""
         reduced_data = Clustering.reduce_dimensionality(data)
 

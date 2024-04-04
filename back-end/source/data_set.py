@@ -1,7 +1,11 @@
 import pandas as pd
-import numpy as np
 from source.api.schemas import DatasetSchema
 from source.data_type import DataType
+
+
+def get_key(dataset_id: int, columns: list[str] | None):
+    return f"{dataset_id}|{'-'.join(sorted(columns))}"
+
 
 class DataSetImplementation:
     '''Implements all of functionalities of DataSet but it is not singleton'''

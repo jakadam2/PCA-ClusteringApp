@@ -1,15 +1,20 @@
+from typing import Optional
+
 import numpy as np
 
 from enum import StrEnum
 from numpy import ndarray
 from pandas import DataFrame
 from abc import abstractmethod
+
+from sklearn import metrics
 from sklearn.cluster import estimate_bandwidth, MeanShift, AffinityPropagation, DBSCAN
 from matplotlib import pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 from sklearn.neighbors import NearestNeighbors
 
+from source.cache import Cache
 from source.data_transformer import DataTransformer
 
 
@@ -20,6 +25,9 @@ class ClusteringMethod(StrEnum):
 
 
 class Clustering:
+
+    cache = Cache[ndarray](10e8)  # cache size of 100MB
+
     @staticmethod
     def affinity_propagation(data: DataFrame, params: dict) -> ndarray:
         """Performs clustering using affinity propagation algorithm."""
@@ -46,6 +54,7 @@ class Clustering:
     def perform_clustering(
             cls: type["Clustering"],
             data: DataFrame,
+            data_id: str,
             method: ClusteringMethod,
             method_parameters: dict,
     ):
@@ -58,14 +67,28 @@ class Clustering:
         if method not in cls.clustering_methods:
             raise ValueError(f"clustering method {method} not recognized.")
 
-        clusters = cls.clustering_methods[method](data, method_parameters)
-        plot = cls.visualize_clustering(data, clusters)
+        if data_id in Clustering.cache:
+            return Clustering.cache[data_id]
 
+        clusters = cls.clustering_methods[method](data, method_parameters)
+        Clustering.cache.put(data_id, clusters)
+        return clusters
+
+    @classmethod
+    def visualize_clustering(
+            cls: type["Clustering"],
+            data: DataFrame,
+            data_id: str,
+            method: Optional[ClusteringMethod],
+            method_parameters: Optional[dict],
+    ):
+        clusters = cls.perform_clustering(data, data_id, method, method_parameters)
+        plot = cls.create_plot(data, clusters)
         return cls.save_plot(plot)
 
     @staticmethod
     @abstractmethod
-    def visualize_clustering(data: DataFrame, clusters: ndarray) -> plt.Figure:
+    def create_plot(data: DataFrame, clusters: ndarray) -> plt.Figure:
         """Produces plot of clusters based on given data and it's labels representing clusters."""
         ...
 
@@ -121,3 +144,18 @@ class Clustering:
         w_sum = (w_distances**dimensions).sum()
         u_sum = (u_distances**dimensions).sum()
         return u_sum/(u_sum + w_sum)
+
+    @classmethod
+    def evaluate_clustering(
+        cls: type["Clustering"],
+        data: DataFrame,
+        data_id: str,
+        method: Optional[ClusteringMethod],
+        method_parameters: Optional[dict],
+    ) -> dict[str, float]:
+        clusters = cls.perform_clustering(data, data_id, method, method_parameters)
+        return {
+            "Silhouette Coefficient": metrics.silhouette_score(data, clusters),
+            "Calinski-Harabasz index": metrics.calinski_harabasz_score(data, clusters),
+            "Davies-Bouldin index": metrics.davies_bouldin_score(data, clusters),
+        }

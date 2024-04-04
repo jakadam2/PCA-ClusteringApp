@@ -13,7 +13,7 @@ from .clustering import Clustering
 class ClusteringStatic(Clustering):
 
     @staticmethod
-    def visualize_clustering(data: DataFrame, clusters: ndarray) -> plt.Figure:
+    def create_plot(data: DataFrame, clusters: ndarray) -> plt.Figure:
         """Produces plot of based on given data and it's labels representing clusters."""
         reduced_data = Clustering.reduce_dimensionality(data)
 

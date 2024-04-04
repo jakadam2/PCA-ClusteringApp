@@ -26,7 +26,6 @@ class DataTransformer:
 
     @staticmethod
     def _to_numeric(column: Series):
-        print(type(column))
         if column.dtype == bool:
             return column.astype(int)
         else:
