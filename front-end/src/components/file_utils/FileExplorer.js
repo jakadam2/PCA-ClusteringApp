@@ -34,7 +34,6 @@ const FileExplorer = () => {
       const formData = new FormData();
       formData.append("file", selectedFile, selectedFile.name);
 
-      // TODO: check if it's even working correctly
       // POST file to backend
       try {
         const response = await fetch("http://localhost:8000/api/file", {
@@ -43,9 +42,7 @@ const FileExplorer = () => {
           body: formData,
         });
 
-        //TODO: handle !response.ok - teraz sie wywala i nawet jak wszystko jest ok to response.ok=false
         if (!response.ok) {
-          console.log(response.ok);
           throw new Error(`Error: ${response.statusText}`);
         }
 
@@ -55,8 +52,6 @@ const FileExplorer = () => {
         alert("Error uploading file.");
 
         window.location.reload();
-        // TODO: delete this after connecting to backend
-        // navigate('/data-type-edit');
       }
     } else {
       console.log("No file selected.");
