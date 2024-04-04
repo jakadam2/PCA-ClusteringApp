@@ -1,33 +1,56 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Chart from "../components/Chart";
 import MenuButton from "../components/buttons/MenuButton";
 import Statistics from "../components/clusterization/Statistics";
 
-const ClusterizationVisualization = ({ algorithm, columns }) => {
-  const imageUrl =
-    "http://localhost:8000/api/clustering/graph?method=Mean-shift";
-  const [img, setImg] = useState();
+const ClusterizationVisualization = () => {
+  const { state } = useLocation();
+  const { algorithm, columns } = state;
+  const fetchGraph = async () => {
+    try {
+      console.log(
+        "test: ",
+        JSON.stringify({
+          columns: columns,
+          method: algorithm,
+          method_parameters: {},
+        })
+      );
+      const response = await fetch(
+        "http://localhost:8000/api/clustering/graph",
+        {
+          //mode: "no-cors",
+          headers: {
+            "Content-Type": "application/json",
+            accept: "application/json",
+          },
+          method: "POST",
+          body: JSON.stringify({
+            columns: columns,
+            method: algorithm,
+            method_parameters: {},
+          }),
+        }
+      );
+      console.log(response);
 
-  const fetchImage = async () => {
-    const res = await fetch(imageUrl, {
-      //mode: "no-cors",
-      method: "GET",
-    });
-    const imageBlob = await res.blob();
-    console.log(imageBlob);
-    var urlCreator = window.URL || window.webkitURL;
-    const imageObjectURL = urlCreator.createObjectURL(imageBlob);
-    document.querySelector("#image").src = imageUrl;
-    setImg(imageObjectURL);
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error("Error fetching clustering graph:", error);
+      alert("Error fetching clustering graph.");
+    }
   };
 
   useEffect(() => {
-    fetchImage();
+    fetchGraph();
   }, []);
 
   return (
     <div className="relative h-[450px] ">
-      <Chart src={img} />
+      <Chart src={"img"} />
       <Statistics />
       <div className="left-0 right-0 flex justify-center items-center mt-10">
         <MenuButton />

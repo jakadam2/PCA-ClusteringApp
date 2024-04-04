@@ -11,8 +11,6 @@ const ClusterizationOptions = () => {
   const [checkedState, setCheckedState] = useState([]);
   const [checkedColumns, setCheckedColumns] = useState([]);
 
-  useEffect(() => {}, []);
-
   useEffect(() => {
     const requestMethods = fetch(
       `http://localhost:8000/api/clustering/methods`
