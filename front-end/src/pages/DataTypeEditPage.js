@@ -5,8 +5,10 @@ const ROWS = 10;
 
 const DataTypeEditPage = () => {
   const [data, setData] = useState([]);
+  const [normalizationMethods, setNormalizationMethods] = useState([]);
   const typesChanges = {};
   const namesChanges = {};
+  const [currNormalizationMethod, setCurrNormalizationMethod] = useState("");
 
   useEffect(() => {
     const requestDataset = fetch(
@@ -17,14 +19,30 @@ const DataTypeEditPage = () => {
       (res) => res.json()
     );
 
-    Promise.all([requestDataset, requestDatatypes]).then(
-      ([dataset, datatypes]) => {
-        setData({
-          dataset: dataset,
-          datatypes: datatypes,
-        });
-      }
-    );
+    const requestNormalizationMethods = fetch(
+      `http://localhost:8000/api/normalization/methods`
+    ).then((res) => res.json());
+
+    Promise.all([
+      requestDataset,
+      requestDatatypes,
+      requestNormalizationMethods,
+    ]).then(([dataset, datatypes, normalizationMethods]) => {
+      setData({
+        dataset: dataset,
+        datatypes: datatypes,
+      });
+      let numNormalizationMethods = normalizationMethods
+        .map((method) => {
+          if (method.compatible_types.includes("numerical")) {
+            return method.name;
+          }
+          return "";
+        })
+        .filter((method) => method !== "");
+      setCurrNormalizationMethod(numNormalizationMethods[0]);
+      setNormalizationMethods(numNormalizationMethods);
+    });
   }, []);
 
   const changeVariableName = (varName, columnId, newName) => {
@@ -41,6 +59,11 @@ const DataTypeEditPage = () => {
     );
     // get data types from backend along with csv file and send changes to back
     typesChanges[header.toString()] = newType.target.value.toString();
+  };
+
+  const changeNormalizationMethod = (event) => {
+    console.log(`Normalization method changed to: ${event.target.value}`);
+    setCurrNormalizationMethod(event.target.value);
   };
 
   const handleSavingChanges = async () => {
@@ -84,6 +107,27 @@ const DataTypeEditPage = () => {
           body: JSON.stringify({ mapping: namesChanges }),
         }
       );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error("Error saving new column names:", error);
+      alert("Error saving new column names.");
+    }
+    //Saving normalization method
+    try {
+      const response = await fetch("http://localhost:8000/api/normalization", {
+        //mode: "no-cors",
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify([
+          { compatible_types: ["numerical"], name: currNormalizationMethod },
+        ]),
+      });
 
       if (!response.ok) {
         throw new Error(`Error: ${response.statusText}`);
@@ -187,6 +231,19 @@ const DataTypeEditPage = () => {
             </tbody>
           </table>
         </div>
+      </div>
+      <div className="left-[25%] relative w-[50%]  justify-center items-center">
+        <select
+          className="form-select w-full block px-2 py-1.5 text-xs font-normal text-gray-700 bg-white bg-clip-padding bg-no-repeat border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
+          onChange={(event) => changeNormalizationMethod(event)}
+          defaultValue={currNormalizationMethod}
+        >
+          {normalizationMethods.map((method) => (
+            <option key={method} value={method}>
+              {method}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="absolute bottom-0 right-0">
         <NewPageButton path={"/menu"} executable={handleSavingChanges} />
