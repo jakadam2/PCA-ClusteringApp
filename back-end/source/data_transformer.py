@@ -44,7 +44,7 @@ class DataTransformer:
     @staticmethod
     def rename(dataset: DataFrame, mapping: dict[str, str]) -> DataFrame:
         """Renames dataset's columns according to the given mapping."""
-        return dataset.rename(mapper=mapping)
+        return dataset.rename(columns=mapping)
 
     @staticmethod
     def normalize(dataset: DataFrame, methods: list[NumNormType | CatNormType]) -> DataFrame:
