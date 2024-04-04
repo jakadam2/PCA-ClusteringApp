@@ -40,6 +40,7 @@ from pandas import DataFrame
 from pydantic import BaseModel, Field
 
 from source.clustering.clustering import ClusteringMethod
+from source.data_transformer import DataTransformer
 from source.data_type import DataType
 from source.normalization import CatNormType, NumNormType
 
@@ -87,10 +88,14 @@ class DatasetSchema(BaseModel):
 
     @staticmethod
     def from_data_frame(data: DataFrame) -> 'DatasetSchema':
+        categorical = DataTransformer.get_categorical_columns(data)
+        numerical = DataTransformer.get_numerical_columns(data)
+
         variables = [Column(name=column_name,
-                            type=DataType.CATEGORICAL if data[column_name].dtype == 'object' else DataType.NUMERICAL,
-                            values=data[column_name].to_list())
-                     for column_name in data.columns]
+                            type=DataType.CATEGORICAL if column_name in categorical else
+                            DataType.NUMERICAL if column_name in numerical else DataType.DATETIME,
+                            values=column.to_list())
+                     for column_name, column in data.items()]
         return DatasetSchema(name='from data_frame', variables=variables)
 
 
