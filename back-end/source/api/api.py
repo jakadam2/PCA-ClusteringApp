@@ -2,7 +2,7 @@ from typing import Annotated
 import pandas as pd
 
 from fastapi import APIRouter, Query, UploadFile, File, HTTPException
-from fastapi.responses import Response
+from fastapi.responses import Response,JSONResponse
 
 from source.api.schemas import DatasetSchema, UpdateColumnNames, UpdateColumnTypes, Graph, NormalizationType, \
     ClusteringDto
@@ -24,8 +24,8 @@ async def post_dataset(file: UploadFile = File(...)):
     Uploaded dataset becomes currently active dataset.
     The CSV file should be delimited by semicolons (;).
     """
-    df = pd.read_csv(file.file, sep=';', decimal=",")
-    DataSet()._data_set = df
+    DataSet().load_data(file)
+    return JSONResponse('Uploaded',201) if not DataSet().has_null else JSONResponse('Data cannot contain missing values',400)
 
 
 @router.get("/file", summary="Retrieve the dataset", response_model=DatasetSchema)
@@ -70,7 +70,7 @@ async def update_columns_types(input_schema: UpdateColumnTypes):
     DataSet().data = transformed_data
 
 
-@router.get("/pca/graph", summary="PCA components graph", response_model=Graph)
+@router.get("/pca/graph", summary="PCA components graph")
 async def get_components_graph():
     """
     ## Retrieve a graph of PCA components.
@@ -78,6 +78,8 @@ async def get_components_graph():
     This endpoint returns a graph image that visualizes the Principal Component Analysis (PCA) components
     of the currently active dataset.
     """
+    graph = PCA.interactive_pca_results(DataSet().data)
+    return Response(graph, media_type='text/html')
     graph = PCA.components_graph(DataSet().data, DataSet().age)
     return Response(graph.getvalue(), media_type='image/png')
 
