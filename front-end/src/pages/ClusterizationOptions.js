@@ -75,8 +75,8 @@ const ClusterizationOptions = () => {
   return (
     <div className="relative h-[450px]">
       <div className="relative h-96">
-        <div className="max-h-80 overflow-scroll bg-main-50 thin-scrollbar">
-          <table className="divide-y divide-gray-200">
+        <div className="max-h-80 overflow-scroll bg-main-50 thin-scrollbar w-auto mx-auto">
+          <table className="divide-y divide-gray-200 w-full">
             {/* Headers/Variable names */}
             <thead className="bg-main-50">
               <tr>
@@ -158,7 +158,7 @@ const ClusterizationOptions = () => {
             );
           })}
         </select>
-        <div className="left-0 right-0 flex justify-center items-center">
+        <div className="my-2 left-0 right-0 flex justify-center items-center">
           <MenuButton />
           &nbsp;&nbsp;&nbsp;
           <NewPageButton
