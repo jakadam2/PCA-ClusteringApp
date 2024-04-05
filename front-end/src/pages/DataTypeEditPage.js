@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { dropdownListStyle } from "../common/styles";
+import { dataHeaderStyle, dropdownListStyle } from "../common/styles";
 import NewPageButton from "../components/buttons/NewPageButton";
 
 const ROWS = 10;
@@ -163,7 +163,7 @@ const DataTypeEditPage = () => {
   return (
     <div className="relative h-[450px]">
       <div className="relative h-96">
-        <div className="max-h-80 overflow-scroll bg-slate-100 thin-scrollbar">
+        <div className="max-h-80 overflow-scroll bg-main-50 thin-scrollbar">
           <table className="divide-y divide-gray-200">
             {/* Headers/Variable names */}
             <thead className="bg-main-50">
@@ -171,7 +171,7 @@ const DataTypeEditPage = () => {
                 {headers.map((header, columnId) => (
                   <th
                     key={header}
-                    className="max-w-40 h-12 px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider hover:bg-main-100 hover:text-gray-700"
+                    className={dataHeaderStyle}
                   >
                     <input
                       placeholder={header}

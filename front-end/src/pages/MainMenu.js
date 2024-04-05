@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { defaultButtonStyle, inactiveButtonStyle } from "../common/styles";
+import { defaultButtonStyle } from "../common/styles";
 import DataPreview from "../components/data_preview/DataPreview";
 
 const MainMenu = () => {

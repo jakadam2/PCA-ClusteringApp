@@ -1,6 +1,6 @@
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -12,12 +12,12 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #AFAFAF;
+  background: #D5BEC1;
 }
 
 .thin-scrollbar::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 5px;
+    height: 5px;
   }
   
   .thin-scrollbar::-webkit-scrollbar-track {
@@ -29,6 +29,6 @@
   }
   
   .thin-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #AFAFAF;
+    background: #D5BEC1;
   }
   
