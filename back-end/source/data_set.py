@@ -1,7 +1,10 @@
 import pandas as pd
 import numpy as np
+
 from source.api.schemas import DatasetSchema
 from source.data_type import DataType
+
+from fastapi import UploadFile
 
 class DataSetImplementation:
     '''Implements all of functionalities of DataSet but it is not singleton'''
@@ -11,9 +14,9 @@ class DataSetImplementation:
         self._name: str|None = None
         self.age:int = 0
 
-    def load_data(self,data_schema:DatasetSchema) -> None:
+    def load_data(self,file:UploadFile) -> None:
         '''Loads DataFrame from DatasetSchema object'''
-        self._data_set = pd.DataFrame({column.name: pd.Series(column.values,dtype = float if column.type == DataType.NUMERICAL else str) for column in data_schema.variables})
+        self._data_set = pd.read_csv(file.file, sep=';', decimal=",")
 
     @property
     def data(self) -> pd.DataFrame:
@@ -25,6 +28,11 @@ class DataSetImplementation:
         self.age += 1
         self._previous_data_set = self._data_set
         self._data_set = new_data
+
+    @property
+    def has_null(self) -> bool:
+        '''Returns true if DataSet contains at least one missing value'''
+        return self._data_set.isnull().any(axis=None)
 
     def get_types(self) -> pd.Series:
         '''Returns types of each column'''
