@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { dataHeaderStyle, dropdownListStyle } from "../common/styles";
 import NewPageButton from "../components/buttons/NewPageButton";
 
 const ROWS = 10;
@@ -162,15 +163,15 @@ const DataTypeEditPage = () => {
   return (
     <div className="relative h-[450px]">
       <div className="relative h-96">
-        <div className="max-h-80 overflow-scroll bg-slate-100">
-          <table className="divide-y divide-gray-200">
+        <div className="max-h-80 overflow-scroll bg-main-50 thin-scrollbar w-auto mx-auto">
+          <table className="divide-y divide-gray-200 w-full">
             {/* Headers/Variable names */}
-            <thead className="bg-gray-50">
+            <thead className="bg-main-50">
               <tr>
                 {headers.map((header, columnId) => (
                   <th
                     key={header}
-                    className="min-w-32 px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 hover:text-gray-700"
+                    className={dataHeaderStyle}
                   >
                     <input
                       placeholder={header}
@@ -181,27 +182,28 @@ const DataTypeEditPage = () => {
                           newName.target.value
                         )
                       }
+                      className="bg-transparent hover:border-b hover:border-slate-300 focus:outline-main-light max-w-full"
                     ></input>
                   </th>
                 ))}
               </tr>
 
               {/* Data type dropdown*/}
-              <tr className="bg-gray-100">
+              <tr className="bg-main-100">
                 {variables.map((variable, columnId) => (
                   <th
                     key={`type-${variable["name"]}`}
                     className="px-3 py-2 text-sm text-gray-600"
                   >
                     <select
-                      className="form-select block w-full px-2 py-1.5 text-xs font-normal text-gray-700 bg-white bg-clip-padding bg-no-repeat border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
+                      className={dropdownListStyle}
                       onChange={(event) =>
                         changeDataType(variable["name"], columnId, event)
                       }
                       defaultValue={variable["type"]}
                     >
                       {dataTypes.map((type) => (
-                        <option key={type} value={type}>
+                        <option key={type} value={type} className="hover:bg-main-light">
                           {type}
                         </option>
                       ))}
@@ -212,16 +214,16 @@ const DataTypeEditPage = () => {
             </thead>
 
             {/* Data values */}
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-main-50">
               {values.map((row, index) => (
                 <tr
                   key={index}
-                  className={`${index % 2 === 0 ? "bg-blue-50" : "bg-gray-50"}`}
+                  className={`${index % 2 === 0 ? "bg-main-50" : "bg-white"}`}
                 >
                   {row.map((value, id) => (
                     <td
                       key={id}
-                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center"
+                      className="px-6 py-2 whitespace-nowrap text-sm text-gray-900 text-center"
                     >
                       {value}
                     </td>
@@ -234,7 +236,7 @@ const DataTypeEditPage = () => {
       </div>
       <div className="left-[25%] relative w-[50%]  justify-center items-center">
         <select
-          className="form-select w-full block px-2 py-1.5 text-xs font-normal text-gray-700 bg-white bg-clip-padding bg-no-repeat border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
+          className={dropdownListStyle}
           onChange={(event) => changeNormalizationMethod(event)}
           defaultValue={currNormalizationMethod}
         >
