@@ -39,7 +39,7 @@ const MainPCAComponentsVisualization = () => {
   }, []);
 
   return (
-    <div className="relative h-[450px]">
+    <div className="relative h-[650px]">
       <Chart img={img} />
       <div className="left-0 right-0 flex justify-center items-center">
         <button
