@@ -11,6 +11,7 @@ from sklearn.manifold import TSNE
 from sklearn.neighbors import NearestNeighbors
 
 from source.data_transformer import DataTransformer
+from source.exceptions import InvalidMethodException
 
 
 class ClusteringMethod(StrEnum):
@@ -56,7 +57,7 @@ class Clustering:
             data.dropna(axis='rows', inplace=True)
 
         if method not in cls.clustering_methods:
-            raise ValueError(f"clustering method {method} not recognized.")
+            raise InvalidMethodException(method)
 
         clusters = cls.clustering_methods[method](data, method_parameters)
         plot = cls.visualize_clustering(data, clusters)
@@ -77,6 +78,9 @@ class Clustering:
     @staticmethod
     def reduce_dimensionality(data: DataFrame) -> DataFrame:
         """Reduces data to 2 dimensions."""
+        if len(data.columns) <= 2:
+            return data
+
         if len(data.columns) > 50:  # somewhat arbitrary number, taken from scikit-learn guide on t-SNE
             pca = PCA(n_components=50)
             data = pca.fit_transform(data)
