@@ -36,7 +36,6 @@ const DataPreview = () => {
       }
     }
   }
-  const dataTypes = data["datatypes"] !== undefined ? data["datatypes"] : [];
 
   return (
     <div className="relative h-96">

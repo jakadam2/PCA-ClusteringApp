@@ -2,13 +2,18 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { navigationButtonStyle } from "../../common/styles";
 
-const NewPageButton = ({ path, isActive = true, executable = () => {} }) => {
+const NewPageButton = ({
+  path,
+  isActive = true,
+  executable = () => {},
+  state = {},
+}) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
     if (isActive) {
       executable();
-      navigate(path);
+      navigate(path, { state: state });
     }
   };
 
