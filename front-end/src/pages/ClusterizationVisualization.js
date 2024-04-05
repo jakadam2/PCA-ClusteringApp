@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Chart from "../components/Chart";
 import MenuButton from "../components/buttons/MenuButton";
 import Statistics from "../components/clusterization/Statistics";
+import Title from "../components/Title";
 
 const ClusterizationVisualization = ({ algorithm, columns }) => {
   const imageUrl =
@@ -27,6 +28,7 @@ const ClusterizationVisualization = ({ algorithm, columns }) => {
 
   return (
     <div className="relative h-[450px] ">
+      <Title title="Wizualizacja"/>
       <Chart src={img} />
       <Statistics />
       <div className="left-0 right-0 flex justify-center items-center mt-10">

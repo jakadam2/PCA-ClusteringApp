@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import NewPageButton from "../components/buttons/NewPageButton";
 import MenuButton from "../components/buttons/MenuButton";
 import { dataHeaderStyle, dropdownListStyle } from "../common/styles";
+import Title from "../components/Title";
 
 const ROWS = 10;
 
@@ -74,6 +75,7 @@ const ClusterizationOptions = () => {
 
   return (
     <div className="relative h-[450px]">
+      <Title title="Klastryzacja"/>
       <div className="relative h-96">
         <div className="max-h-80 overflow-scroll bg-main-50 thin-scrollbar w-auto mx-auto">
           <table className="divide-y divide-gray-200 w-full">

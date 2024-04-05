@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDropzone } from "react-dropzone";
 import { navigationButtonStyle } from "../../common/styles";
+import Title from "../Title";
 
 function getExtension(filename) {
   var parts = filename.split(".");
@@ -61,7 +62,7 @@ const FileExplorer = () => {
 
   return (
     <div className="relative min-h-72">
-      <p className="my-5">Ścieżka do pliku:</p>
+      <Title title="Ścieżka do pliku"/>
       <div
         {...getRootProps({ className: "dropzone" })}
         className="bg-zinc-50 h-36 px-10 py-5 border rounded border-main-100
