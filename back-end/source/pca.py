@@ -27,6 +27,7 @@ class PCA:
             cls.current_age += 1
             cls._pca.fit(StandardScaler().fit_transform(data_set.select_dtypes(include=np.number).dropna()))
             cls._columns_names = data_set.select_dtypes(include=np.number).columns
+            cls._columns_size = len(cls._columns_names)
 
     @classmethod
     def transform(cls,data_set:pd.DataFrame,age:int = -2) -> pd.DataFrame:
@@ -35,42 +36,48 @@ class PCA:
         return cls._pca.transform(data_set.select_dtypes(include=np.number).notnull())
 
     @classmethod
-    def components_graph(cls,data_set:pd.DataFrame,age:int = -2,format = 'jpg') -> io.BytesIO:
-        '''Fit PCA transform if needed and returns components graph'''
-        cls._fit(data_set)
-        explained_variance = cls._pca.explained_variance_ratio_
-        fig = plt.figure()
-        plt.title('Percentage explained variance by each PCA component')
-        plt.bar([f'PCA{i + 1}' for i in range(len(explained_variance))],explained_variance)
-        plt.xlabel('Component')
-        plt.ylabel('Percentage explained variance')
-        buffer = io.BytesIO()
-        plt.savefig(buffer,format = format)
-        buffer.seek(0)
-        plt.close(fig)
-        return buffer
-
-    @classmethod
     def interactive_pca_results(cls,data_set:pd.DataFrame) -> str:
+        '''Make interactive plots using plotly and return html'''
         cls._fit(data_set)
-        explained_variance = cls._pca.explained_variance_ratio_
-        pca_graph = make_subplots(rows=1,cols=2)
-        explained_variance_graph = PCA.explained_variance_graph(explained_variance)
-        components_direction_graph = PCA.components_direction_graph(pca_graph)
-        pca_graph.add_trace(explained_variance_graph,row=1,col=1)
-        return components_direction_graph.to_html(config = PCA.get_configs())
+        pca_graph = make_subplots(rows=2,cols=2,subplot_titles=("Explained variance ratio", 
+                                                                "Components direction", 
+                                                                "Participation of basic features", 
+                                                                "Participation of basic features"))
+        PCA.explained_variance_graph(pca_graph)
+        PCA.components_direction_graph(pca_graph)
+        PCA.loadigns_graph(pca_graph)
+        pca_graph.update_layout(
+        legend={
+            "title": "Component",
+            "xref": "container",
+            "yref": "container",
+            "y": 0.87,
+
+        },legend3={
+            "title": "Feature",
+            "xref": "container",
+            "yref": "container",
+            "y": 0.07,
+
+        },plot_bgcolor='white')
+        return pca_graph.to_html(config = PCA.get_configs())
     
-    @staticmethod
-    def explained_variance_graph(explained_variance) -> go.Bar:
-        colors = [color.to_str() for color in get_colour_palette_rgba(len(explained_variance))]
-        fig = go.Bar(y = explained_variance ,x = [f'PCA{i + 1}' for i in range(len(explained_variance))],marker_color=colors)
-        return fig
+    @classmethod
+    def explained_variance_graph(cls,fig:go.Figure) -> None:
+        explained_variances = cls.explained_variance()
+        colors = [color.to_str() for color in get_colour_palette_rgba(cls._columns_size)]
+        fig.add_trace(go.Bar(y = explained_variances ,
+                             x = [f'PCA{i + 1}' for i in range(cls._columns_size)],
+                             marker_color=colors,showlegend=False),
+                             row = 1,col=1)
+        fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='white',title_text='Component',row = 1,col =1 )
+        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='white',title_text='Explained variance',row = 1,col =1)      
 
     @classmethod
-    def components_direction_graph(cls,fig) -> go.Figure:
-        explained_variances = cls._pca.explained_variance_ratio_
+    def components_direction_graph(cls,fig:go.Figure) -> None:
+        explained_variances = cls.explained_variance()
         loadings = cls._pca.components_.T * np.sqrt(explained_variances)
-        colors = [color.to_str() for color in get_colour_palette_rgba(len(explained_variances))]
+        colors = [color.to_str() for color in get_colour_palette_rgba(cls._columns_size)]
         for i, feature in enumerate(cls._columns_names):
             fig.add_trace(go.Scatter(
                 x=[0, loadings[i, 0]/2],
@@ -81,13 +88,51 @@ class PCA:
                 marker=dict(color=colors[i], size=10,symbol= "arrow-bar-up", angleref="previous"),
                 text=[feature],
                 hoverinfo='text',
-                showlegend=True
+                showlegend=True,
+                legend='legend'
             ),row = 1,col = 2)
-
-        fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='white',title_text='Principal Component 1',row = 1,col =2)
-        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='white',title_text='Principal Component 2',row = 1,col =2)
-        return fig
-
+        fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='white',title_text='PCA1',row = 1,col =2)
+        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='white',title_text='PCA2',row = 1,col =2)
+    
+    @classmethod
+    def loadigns_graph(cls,fig:go.Figure) -> None:
+        colors = [color.to_str() for color in get_colour_palette_rgba(cls._columns_size)]
+        explained_variances = cls.explained_variance()
+        loadings = abs(cls._pca.components_.T * np.sqrt(explained_variances))
+        loading_ratio = loadings/np.sum(loadings,axis = 0)
+        top_labels = cls._columns_names
+        y_labels = [f'PCA{i + 1}' for i in range(cls._columns_size)]
+        half_idx = cls._columns_size//2
+        for i in range(cls._columns_size):
+            fig.add_trace(go.Bar(
+                y = y_labels[:half_idx],
+                x = loading_ratio[i,:half_idx],
+                name = top_labels[i],
+                marker = dict(
+                color=colors[i]),
+                orientation='h',
+                legendgroup=top_labels[i],
+                legend='legend3'
+            
+            ),row = 2,col = 1)
+        for i in range(cls._columns_size):
+            fig.add_trace(go.Bar(
+                y = y_labels[half_idx:],
+                x = loading_ratio[i,half_idx:],
+                name = top_labels[i],
+                marker = dict(
+                color=colors[i]),
+                orientation='h',
+                legendgroup=top_labels[i],
+                legend='legend3',
+                showlegend=False
+            ),row = 2,col = 2)
+        fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='white',title_text='Participation of basic feature',row = 2,col =2)
+        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='white',title_text='Principal Component',row = 2,col =2)
+        fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='white',title_text='Participation of basic feature',row = 2,col =1)
+        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='white',title_text='Principal Component',row = 2,col =1)
+        fig.update_layout(barmode='stack')
+                
     @classmethod
     def explained_variance(cls) -> pd.Series:
         return cls._pca.explained_variance_ratio_
