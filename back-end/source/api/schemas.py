@@ -33,9 +33,10 @@ clusteringDescription = {
     }
 """
 import datetime
-from typing import List, Union, Dict, Any
+from typing import List, Union, Dict, Any, Annotated
 
-from fastapi import File
+from annotated_types import MinLen
+from fastapi import File, Body
 from pandas import DataFrame
 from pydantic import BaseModel, Field
 
@@ -156,20 +157,27 @@ class UpdateColumnTypes(BaseModel):
         }
 
 
-class ClusteringDto(BaseModel):
-    method: ClusteringMethod = Field(..., description="Name of the clustering method.")
-    columns: list[str] = Field(..., description="A list of names of columns on which "
-                                                "the clustering method will be performed.")
-    method_parameters: dict[str, Any] = Field(..., description="Parameters for the chosen clustering method.")
+Columns = Annotated[
+    list[str],
+    MinLen(2),
+    Body(
+        description="A list of names of columns of a current active dataset.",
+        example=["Column A", "Column B"]
+    )
+]
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "method": "Mean-shift",
-                "columns": ["column_name1", "column_name2"],
-                "method_parameters": {
-                    "param_name1": 1.0,
-                    "param_name2": 0.5
-                }
-            }
+ClusteringMethodSchema = Annotated[
+    ClusteringMethod,
+    Body(description="Name of the clustering method.", example="Mean-shift")
+]
+
+MethodParameters = Annotated[
+    dict[str, Any],
+    Body(
+        description="Parameters for the chosen method.",
+        example={
+            "param_name1": 1.0,
+            "param_name2": 0.5
         }
+    ),
+]

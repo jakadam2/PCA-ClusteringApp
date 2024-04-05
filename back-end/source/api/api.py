@@ -1,19 +1,39 @@
 from typing import Annotated
 import pandas as pd
 
-from fastapi import APIRouter, Query, UploadFile, File, HTTPException
+from fastapi import APIRouter, Query, UploadFile, File, HTTPException, Depends, Body
 from fastapi.responses import Response,JSONResponse
+from pandas import DataFrame
 
 from source.api.schemas import DatasetSchema, UpdateColumnNames, UpdateColumnTypes, Graph, NormalizationType, \
-    ClusteringDto
+    Columns, ClusteringMethodSchema, MethodParameters
 from source.clustering.clustering import Clustering, ClusteringMethod
 from source.clustering.clustering_interactive import ClusteringInteractive
 from source.data_set import DataSet
 from source.data_transformer import DataTransformer
 from source.data_type import DataType
+from source.exceptions import NonexistentColumnsException, NonNumericColumnsException
 from source.pca import PCA
 
 router = APIRouter(prefix="/api")
+
+
+async def subset_dependency(columns: Columns) -> DataFrame:
+    """Provides a subset of current active dataset."""
+    if not set(columns).issubset(DataSet().data.columns):
+        raise NonexistentColumnsException()
+
+    data_subset = DataSet().data[columns]
+    return data_subset
+
+
+async def numerical_subset_dependency(data_subset: Annotated[DataFrame, Depends(subset_dependency)]) -> DataFrame:
+    """Provides a subset of current active dataset and validates that all columns are of numeric type."""
+    numerical_columns = DataTransformer.get_numerical_columns(data_subset).size
+    if len(data_subset) != numerical_columns:
+        raise NonNumericColumnsException()
+
+    return data_subset
 
 
 @router.post("/file", summary="Upload a dataset")
@@ -67,7 +87,6 @@ async def update_columns_types(input_schema: UpdateColumnTypes):
     displayed type of the column but slo tries to transform the data to the desired type.
     """
     transformed_data = DataTransformer.change_types(DataSet().data, input_schema.mapping)
-    print(transformed_data)
     DataSet().data = transformed_data
 
 
@@ -137,7 +156,11 @@ async def get_data_types():
 
 
 @router.post("/clustering/graph", summary="clustering graph")
-async def perform_clustering(input_schema: ClusteringDto):
+async def perform_clustering(
+    data_subset: Annotated[DataFrame, Depends(numerical_subset_dependency)],
+    method: ClusteringMethodSchema,
+    method_parameters: Annotated[MethodParameters | None, Body()] = None
+):
     """
     ## Generate a clustering graph.
 
@@ -146,16 +169,12 @@ async def perform_clustering(input_schema: ClusteringDto):
     `columns` parameter should contain list of column names from the current active dataset on which clustering
     will be performed.
     """
-    if not set(input_schema.columns).issubset(DataSet().data.columns):
-        raise HTTPException(status_code=404, detail="Nonexistent columns provided")
-
-    chosen_columns = DataSet().data[input_schema.columns]
-    graph = ClusteringInteractive.perform_clustering(chosen_columns, input_schema.method, input_schema.method_parameters)
+    graph = ClusteringInteractive.perform_clustering(data_subset, method, method_parameters)
     return Response(graph, media_type='text/html')
 
 
 @router.post("/clustering/clustering_tendency", summary="Clustering tendency")
-async def get_clustering_tendency(columns: list[str]):
+async def get_clustering_tendency(data_subset: Annotated[DataFrame, Depends(numerical_subset_dependency)]):
     """
     ## Return a hopkins statistic.
 
@@ -163,12 +182,7 @@ async def get_clustering_tendency(columns: list[str]):
     `columns` parameter should contain list of column names from the current active dataset no which clustering
     will be performed.
     """
-    if not set(columns).issubset(DataSet().data.columns):
-        print(DataSet().data.columns.isin(columns), columns, DataSet().data.columns)
-        raise HTTPException(status_code=404, detail="Nonexistent columns provided")
-
-    chosen_columns = DataSet().data[columns]
-    return Clustering.hopkins_statistic(chosen_columns)
+    return Clustering.hopkins_statistic(data_subset)
 
 
 @router.get("/clustering/methods", summary="clustering methods", response_model=list[ClusteringMethod])
