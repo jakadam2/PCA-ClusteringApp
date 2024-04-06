@@ -1,16 +1,15 @@
 from typing import Annotated
-import pandas as pd
 
-from fastapi import APIRouter, Query, UploadFile, File, HTTPException, Depends, Body
+from fastapi import APIRouter, Query, UploadFile, File, Depends, Body
 from fastapi.responses import Response,JSONResponse
 from pandas import DataFrame
 
-from source.api.schemas import DatasetSchema, UpdateColumnNames, UpdateColumnTypes, Graph, NormalizationType, \
+from source.api.schemas import DatasetSchema, UpdateColumnNames, UpdateColumnTypes, NormalizationType, \
     Columns, ClusteringMethodSchema, MethodParameters
 from source.clustering.clustering import Clustering, ClusteringMethod
 from source.clustering.clustering_interactive import ClusteringInteractive
 from source.data_set import DataSet
-from source.data_transformer import DataTransformer
+from source.preprocessing.data_transformer import DataTransformer
 from source.data_type import DataType
 from source.exceptions import NonexistentColumnsException, NonNumericColumnsException
 from source.pca import PCA
