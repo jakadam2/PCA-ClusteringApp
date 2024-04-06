@@ -10,7 +10,7 @@ from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 from sklearn.neighbors import NearestNeighbors
 
-from source.data_transformer import DataTransformer
+from source.preprocessing.data_transformer import DataTransformer
 from source.exceptions import InvalidMethodException
 
 

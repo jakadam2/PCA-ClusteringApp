@@ -41,7 +41,7 @@ from pandas import DataFrame
 from pydantic import BaseModel, Field
 
 from source.clustering.clustering import ClusteringMethod
-from source.data_transformer import DataTransformer
+from source.preprocessing.data_transformer import DataTransformer
 from source.data_type import DataType
 from source.normalization import CatNormType, NumNormType
 
@@ -102,15 +102,15 @@ class DatasetSchema(BaseModel):
 
 class NormalizationType(BaseModel):
     name: CatNormType | NumNormType = Field(..., description="The name of the normalization method.")
-    compatible_types: List[DataType] = Field(...,
-                                             description="A list of data types compatible with this normalization "
-                                                         "method."
-                                             )
+    compatible_types: List[DataType] | None = Field(default=None,
+                                                    description="A list of data types compatible with this "
+                                                                "normalization method."
+                                                    )
 
     class Config:
         json_schema_extra = {
             "example": {
-                "name": "one_hot",
+                "name": "one_hot_encoding",
                 "compatible_types": ["categorical"]
             }
         }
