@@ -172,12 +172,14 @@ class ClusteringMethodSchema(BaseModel):
         }
 
 
-Columns = Annotated[
-    list[str],
-    MinLen(2),
-    Body(
-        description="A list of names of columns of a current active dataset.",
-        example=["Column A", "Column B"]
-    )
-]
+class ClusteringStatistics(BaseModel):
+    statistics: dict[str, float] = Field(description="[Statistics of the clustering.")
 
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "Silhouette Coefficient": 0.1,
+                "Calinski-Harabasz index": 0.5,
+                "Davies-Bouldin index": 2.7,
+            }
+        }

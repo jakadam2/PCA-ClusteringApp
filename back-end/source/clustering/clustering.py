@@ -17,7 +17,7 @@ from sklearn.neighbors import NearestNeighbors
 
 from source.cache import Cache
 from source.preprocessing.data_transformer import DataTransformer
-from source.exceptions import InvalidMethodException
+from source.exceptions import InvalidMethodException, InvalidMethodArguments
 
 
 class ClusteringMethod(StrEnum):
@@ -74,7 +74,10 @@ class Clustering:
         if method not in cls.clustering_methods:
             raise InvalidMethodException(method)
 
-        clusters = cls.clustering_methods[method](data, method_parameters)
+        try:
+            clusters = cls.clustering_methods[method](data, method_parameters)
+        except TypeError:
+            raise InvalidMethodArguments(method)
 
         # caching results for later use
         Clustering.clusters_cache.put(clustering_id, clusters)
