@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDropzone } from "react-dropzone";
+import { navigationButtonStyle } from "../../common/styles";
+import Title from "../Title";
 
 function getExtension(filename) {
   var parts = filename.split(".");
@@ -34,7 +36,6 @@ const FileExplorer = () => {
       const formData = new FormData();
       formData.append("file", selectedFile, selectedFile.name);
 
-      // TODO: check if it's even working correctly
       // POST file to backend
       try {
         const response = await fetch("http://localhost:8000/api/file", {
@@ -43,9 +44,7 @@ const FileExplorer = () => {
           body: formData,
         });
 
-        //TODO: handle !response.ok - teraz sie wywala i nawet jak wszystko jest ok to response.ok=false
         if (!response.ok) {
-          console.log(response.ok);
           throw new Error(`Error: ${response.statusText}`);
         }
 
@@ -55,8 +54,6 @@ const FileExplorer = () => {
         alert("Error uploading file.");
 
         window.location.reload();
-        // TODO: delete this after connecting to backend
-        // navigate('/data-type-edit');
       }
     } else {
       console.log("No file selected.");
@@ -65,28 +62,32 @@ const FileExplorer = () => {
 
   return (
     <div className="relative min-h-72">
-      <p className="my-5">Ścieżka do pliku:</p>
+      <Title title="Ścieżka do pliku"/>
       <div
         {...getRootProps({ className: "dropzone" })}
-        className="bg-zinc-50 px-10 py-5 border rounded border-slate-200
-            hover:border-dotted hover:border-slate-500 cursor-pointer flex items-center justify-center"
+        className="bg-zinc-50 h-36 px-10 py-5 border rounded border-main-100
+            hover:border-dotted hover:border-main-light cursor-pointer flex items-center justify-center"
       >
         <input {...getInputProps()} />
-        <p className="text-gray-500 text-center">
-          Możesz przeciągnąć i upuścić plik tutaj, lub kliknij by wybrać.
-        </p>
+
+        <div>
+            <p className="text-gray-400 text-center">
+            Możesz przeciągnąć i upuścić plik tutaj, lub kliknij by wybrać.
+            </p>
+            
+            {selectedFile && (
+                <p className="text-main text-sm text-center">
+                    Wybrany plik: {selectedFile.name}
+                </p>
+            )}
+        </div>
       </div>
       {selectedFile && (
         <div>
-          <p className="text-gray-500 text-sm">
-            Wybrany plik: {selectedFile.name}
-          </p>
           <div className="absolute bottom-0 right-0">
             <button
               onClick={handleStartWork}
-              className=" text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300
-                  font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700
-                  focus:outline-none dark:focus:ring-blue-800"
+              className={navigationButtonStyle}
             >
               Zacznij pracę
             </button>

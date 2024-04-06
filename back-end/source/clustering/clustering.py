@@ -1,6 +1,7 @@
 from typing import Optional
 
 import numpy as np
+import hashlib
 
 from enum import StrEnum
 from numpy import ndarray
@@ -15,7 +16,8 @@ from sklearn.manifold import TSNE
 from sklearn.neighbors import NearestNeighbors
 
 from source.cache import Cache
-from source.data_transformer import DataTransformer
+from source.preprocessing.data_transformer import DataTransformer
+from source.exceptions import InvalidMethodException
 
 
 class ClusteringMethod(StrEnum):
@@ -26,7 +28,10 @@ class ClusteringMethod(StrEnum):
 
 class Clustering:
 
-    cache = Cache[ndarray](10e8)  # cache size of 100MB
+    clusters_cache = Cache[ndarray](10e8)  # cache size of 100MB
+
+    # Stores id of the dataset used for clustering, which consists of its columns at the moment
+    dataset_cache = Cache[list[str]](10e6, parent=clusters_cache)
 
     @staticmethod
     def affinity_propagation(data: DataFrame, params: dict) -> ndarray:
@@ -54,35 +59,47 @@ class Clustering:
     def perform_clustering(
             cls: type["Clustering"],
             data: DataFrame,
-            data_id: str,
             method: ClusteringMethod,
             method_parameters: dict,
-    ):
+    ) -> str:
         """Performs chosen clustering operation and returns plot of clusters."""
+        clustering_id = cls.get_clustering_id(data.columns.to_list(), method, method_parameters)
+        if clustering_id in Clustering.clusters_cache:
+            return clustering_id
+
         data = data[DataTransformer.get_numerical_columns(data)]
 
         if data.isna().values.any():
-            data.dropna(axis='rows', inplace=True)
+            data.dropna(axis='rows', inplace=True)  # is it a good idea to do it inplace?
 
         if method not in cls.clustering_methods:
-            raise ValueError(f"clustering method {method} not recognized.")
-
-        if data_id in Clustering.cache:
-            return Clustering.cache[data_id]
+            raise InvalidMethodException(method)
 
         clusters = cls.clustering_methods[method](data, method_parameters)
-        Clustering.cache.put(data_id, clusters)
-        return clusters
+        Clustering.clusters_cache.put(clustering_id, clusters)
+
+        return clustering_id
 
     @classmethod
-    def visualize_clustering(
+    def get_clustering_id(
             cls: type["Clustering"],
-            data: DataFrame,
-            data_id: str,
-            method: Optional[ClusteringMethod],
-            method_parameters: Optional[dict],
-    ):
-        clusters = cls.perform_clustering(data, data_id, method, method_parameters)
+            columns: list,
+            method: ClusteringMethod,
+            method_parameters: dict
+    ) -> str:
+        """Creates a unique key identifying a clustering result."""
+        raw_key = f"{method}{method_parameters}{columns}"
+        raw_key_bytes = raw_key.encode('utf-8')
+        return hashlib.md5(raw_key_bytes).hexdigest()
+
+    @classmethod
+    def get_origin_data(cls: type["Clustering"], clustering_id: str, dataset: DataFrame) -> DataFrame:
+        columns = cls.dataset_cache[clustering_id]
+        return dataset[columns]
+
+    @classmethod
+    def visualize_clustering(cls: type["Clustering"], clustering_id: str, data: DataFrame):
+        clusters = cls.clusters_cache[clustering_id]
         plot = cls.create_plot(data, clusters)
         return cls.save_plot(plot)
 
@@ -100,6 +117,9 @@ class Clustering:
     @staticmethod
     def reduce_dimensionality(data: DataFrame) -> DataFrame:
         """Reduces data to 2 dimensions."""
+        if len(data.columns) <= 2:
+            return data
+
         if len(data.columns) > 50:  # somewhat arbitrary number, taken from scikit-learn guide on t-SNE
             pca = PCA(n_components=50)
             data = pca.fit_transform(data)
@@ -146,14 +166,8 @@ class Clustering:
         return u_sum/(u_sum + w_sum)
 
     @classmethod
-    def evaluate_clustering(
-        cls: type["Clustering"],
-        data: DataFrame,
-        data_id: str,
-        method: Optional[ClusteringMethod],
-        method_parameters: Optional[dict],
-    ) -> dict[str, float]:
-        clusters = cls.perform_clustering(data, data_id, method, method_parameters)
+    def evaluate_clustering(cls: type["Clustering"], clustering_id: str, data: DataFrame) -> dict[str, float]:
+        clusters = cls.clusters_cache[clustering_id]
         return {
             "Silhouette Coefficient": metrics.silhouette_score(data, clusters),
             "Calinski-Harabasz index": metrics.calinski_harabasz_score(data, clusters),

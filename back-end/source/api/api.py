@@ -1,19 +1,38 @@
 from typing import Annotated
-import pandas as pd
 
-from fastapi import APIRouter, Query, UploadFile, File, HTTPException
-from fastapi.responses import Response
+from fastapi import APIRouter, Query, UploadFile, File, Depends, Body
+from fastapi.responses import Response,JSONResponse
+from pandas import DataFrame
 
-from source.api.schemas import DatasetSchema, UpdateColumnNames, UpdateColumnTypes, Graph, NormalizationType, \
-    ClusteringDto
+from source.api.schemas import DatasetSchema, UpdateColumnNames, UpdateColumnTypes, NormalizationType, \
+    Columns, ClusteringMethodSchema, MethodParameters
 from source.clustering.clustering import Clustering, ClusteringMethod
 from source.clustering.clustering_interactive import ClusteringInteractive
-from source.data_set import DataSet, get_key
-from source.data_transformer import DataTransformer
+from source.data_set import DataSet
+from source.preprocessing.data_transformer import DataTransformer
 from source.data_type import DataType
+from source.exceptions import NonexistentColumnsException, NonNumericColumnsException
 from source.pca import PCA
 
 router = APIRouter(prefix="/api")
+
+
+async def subset_dependency(columns: Columns) -> DataFrame:
+    """Provides a subset of current active dataset."""
+    if not set(columns).issubset(DataSet().data.columns):
+        raise NonexistentColumnsException()
+
+    data_subset = DataSet().data[columns]
+    return data_subset
+
+
+async def numerical_subset_dependency(data_subset: Annotated[DataFrame, Depends(subset_dependency)]) -> DataFrame:
+    """Provides a subset of current active dataset and validates that all columns are of numeric type."""
+    numerical_columns = DataTransformer.get_numerical_columns(data_subset).size
+    if len(data_subset) != numerical_columns:
+        raise NonNumericColumnsException()
+
+    return data_subset
 
 
 @router.post("/file", summary="Upload a dataset")
@@ -24,8 +43,8 @@ async def post_dataset(file: UploadFile = File(...)):
     Uploaded dataset becomes currently active dataset.
     The CSV file should be delimited by semicolons (;).
     """
-    df = pd.read_csv(file.file, sep=';', decimal=",")
-    DataSet()._data_set = df
+    DataSet().load_data(file)
+    return JSONResponse('Uploaded',201) if not DataSet().has_null else JSONResponse('Data cannot contain missing values',400)
 
 
 @router.get("/file", summary="Retrieve the dataset", response_model=DatasetSchema)
@@ -43,7 +62,7 @@ async def get_head(rows: Annotated[int, Query(gt=1)]):
     """
     ## Get the first 'n' rows of the dataset.
     """
-    head = DataSet().get_head(rows).fillna('')
+    head = DataSet().get_head(rows)
     return DatasetSchema.from_data_frame(head)
 
 
@@ -70,7 +89,7 @@ async def update_columns_types(input_schema: UpdateColumnTypes):
     DataSet().data = transformed_data
 
 
-@router.get("/pca/graph", summary="PCA components graph", response_model=Graph)
+@router.get("/pca/graph", summary="PCA components graph")
 async def get_components_graph():
     """
     ## Retrieve a graph of PCA components.
@@ -78,8 +97,8 @@ async def get_components_graph():
     This endpoint returns a graph image that visualizes the Principal Component Analysis (PCA) components
     of the currently active dataset.
     """
-    graph = PCA.components_graph(DataSet().data, DataSet().age)
-    return Response(graph.getvalue(), media_type='image/png')
+    graph = PCA.interactive_pca_results(DataSet().data)
+    return Response(graph, media_type='text/html')
 
 
 @router.get('/pca/transform', summary="PCA transformation result", response_model=DatasetSchema)
@@ -134,7 +153,11 @@ async def get_data_types():
 
 
 @router.post("/clustering/graph", summary="clustering graph")
-async def perform_clustering(input_schema: ClusteringDto):
+async def perform_clustering(
+    data_subset: Annotated[DataFrame, Depends(numerical_subset_dependency)],
+    method: ClusteringMethodSchema,
+    method_parameters: Annotated[MethodParameters | None, Body()] = None
+):
     """
     ## Generate a clustering graph.
 
@@ -143,22 +166,13 @@ async def perform_clustering(input_schema: ClusteringDto):
     `columns` parameter should contain list of column names from the current active dataset on which clustering
     will be performed.
     """
-    if not set(input_schema.columns).issubset(DataSet().data.columns):
-        raise HTTPException(status_code=404, detail="Nonexistent columns provided")
-
-    sub_dataset = DataSet().data[input_schema.columns]
-    dataset_key = get_key(DataSet().age, input_schema.columns)
-    graph = ClusteringInteractive.visualize_clustering(
-        sub_dataset,
-        dataset_key,
-        input_schema.method,
-        input_schema.method_parameters,
-    )
+    clustering_id = ClusteringInteractive.perform_clustering(data_subset,  method, method_parameters)
+    graph = ClusteringInteractive.visualize_clustering(clustering_id, data_subset)
     return Response(graph, media_type='text/html')
 
 
 @router.post("/clustering/clustering_tendency", summary="Clustering tendency")
-async def get_clustering_tendency(columns: list[str]):
+async def get_clustering_tendency(data_subset: Annotated[DataFrame, Depends(numerical_subset_dependency)]):
     """
     ## Return a hopkins statistic.
 
@@ -166,11 +180,7 @@ async def get_clustering_tendency(columns: list[str]):
     `columns` parameter should contain list of column names from the current active dataset no which clustering
     will be performed.
     """
-    if not set(columns).issubset(DataSet().data.columns):
-        raise HTTPException(status_code=404, detail="Nonexistent columns provided")
-
-    chosen_columns = DataSet().data[columns]
-    return Clustering.hopkins_statistic(chosen_columns)
+    return Clustering.hopkins_statistic(data_subset)
 
 
 @router.get("/clustering/methods", summary="clustering methods", response_model=list[ClusteringMethod])

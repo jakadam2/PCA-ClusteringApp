@@ -33,13 +33,15 @@ clusteringDescription = {
     }
 """
 import datetime
-from typing import List, Union, Dict, Any
+from typing import List, Union, Dict, Any, Annotated
 
-from fastapi import File
+from annotated_types import MinLen
+from fastapi import File, Body
 from pandas import DataFrame
 from pydantic import BaseModel, Field
 
 from source.clustering.clustering import ClusteringMethod
+from source.preprocessing.data_transformer import DataTransformer
 from source.data_type import DataType
 from source.normalization import CatNormType, NumNormType
 
@@ -87,24 +89,28 @@ class DatasetSchema(BaseModel):
 
     @staticmethod
     def from_data_frame(data: DataFrame) -> 'DatasetSchema':
+        categorical = DataTransformer.get_categorical_columns(data)
+        numerical = DataTransformer.get_numerical_columns(data)
+
         variables = [Column(name=column_name,
-                            type=DataType.CATEGORICAL if data[column_name].dtype == 'object' else DataType.NUMERICAL,
-                            values=data[column_name].to_list())
-                     for column_name in data.columns]
+                            type=DataType.CATEGORICAL if column_name in categorical else
+                            DataType.NUMERICAL if column_name in numerical else DataType.DATETIME,
+                            values=column.to_list())
+                     for column_name, column in data.items()]
         return DatasetSchema(name='from data_frame', variables=variables)
 
 
 class NormalizationType(BaseModel):
     name: CatNormType | NumNormType = Field(..., description="The name of the normalization method.")
-    compatible_types: List[DataType] = Field(...,
-                                             description="A list of data types compatible with this normalization "
-                                                         "method."
-                                             )
+    compatible_types: List[DataType] | None = Field(default=None,
+                                                    description="A list of data types compatible with this "
+                                                                "normalization method."
+                                                    )
 
     class Config:
         json_schema_extra = {
             "example": {
-                "name": "one_hot",
+                "name": "one_hot_encoding",
                 "compatible_types": ["categorical"]
             }
         }
@@ -151,20 +157,27 @@ class UpdateColumnTypes(BaseModel):
         }
 
 
-class ClusteringDto(BaseModel):
-    method: ClusteringMethod = Field(..., description="Name of the clustering method.")
-    columns: list[str] = Field(..., description="A list of names of columns on which "
-                                                "the clustering method will be performed.")
-    method_parameters: dict[str, Any] = Field(..., description="Parameters for the chosen clustering method.")
+Columns = Annotated[
+    list[str],
+    MinLen(2),
+    Body(
+        description="A list of names of columns of a current active dataset.",
+        example=["Column A", "Column B"]
+    )
+]
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "method": "Mean-shift",
-                "columns": ["column_name1", "column_name2"],
-                "method_parameters": {
-                    "param_name1": 1.0,
-                    "param_name2": 0.5
-                }
-            }
+ClusteringMethodSchema = Annotated[
+    ClusteringMethod,
+    Body(description="Name of the clustering method.", example="Mean-shift")
+]
+
+MethodParameters = Annotated[
+    dict[str, Any],
+    Body(
+        description="Parameters for the chosen method.",
+        example={
+            "param_name1": 1.0,
+            "param_name2": 0.5
         }
+    ),
+]

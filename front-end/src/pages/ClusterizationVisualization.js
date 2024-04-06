@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import Chart from "../components/Chart";
 import MenuButton from "../components/buttons/MenuButton";
 import Statistics from "../components/clusterization/Statistics";
+import Title from "../components/Title";
 
-const ClusterizationVisualization = () => {
+const ClusterizationVisualization = ({ algorithm, columns }) => {
   const imageUrl =
     "http://localhost:8000/api/clustering/graph?method=Mean-shift";
   const [img, setImg] = useState();
@@ -27,6 +28,7 @@ const ClusterizationVisualization = () => {
 
   return (
     <div className="relative h-[450px] ">
+      <Title title="Wizualizacja"/>
       <Chart src={img} />
       <Statistics />
       <div className="left-0 right-0 flex justify-center items-center mt-10">
