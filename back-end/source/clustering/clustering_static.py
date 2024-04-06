@@ -12,10 +12,10 @@ from .clustering import Clustering
 
 class ClusteringStatic(Clustering):
 
-    @staticmethod
-    def create_plot(data: DataFrame, clusters: ndarray) -> plt.Figure:
+    @classmethod
+    def create_plot(cls, data: DataFrame, clusters: ndarray) -> plt.Figure:
         """Produces plot of based on given data and it's labels representing clusters."""
-        reduced_data = Clustering.reduce_dimensionality(data)
+        reduced_data = cls.reduce_dimensionality(data)
 
         fig, axes = plt.subplots(4, 2, figsize=(8, 9),
                                  gridspec_kw={'hspace': 0,
@@ -36,8 +36,8 @@ class ClusteringStatic(Clustering):
         fig.delaxes(axes[2, 1])
         fig.delaxes(axes[3, 1])
 
-        ClusteringStatic.cluster_plot(reduced_data, clusters, axes[1, 0], axes[1, 1], axes[0, 0])
-        ClusteringStatic.histogram(clusters, axes[3, 0])
+        cls.cluster_plot(reduced_data, clusters, axes[1, 0], axes[1, 1], axes[0, 0])
+        cls.histogram(clusters, axes[3, 0])
 
         fig.tight_layout()
         return fig
@@ -77,8 +77,8 @@ class ClusteringStatic(Clustering):
         ax.spines['bottom'].set_visible(False)
         ax.set_title('Cluster Distribution')
 
-    @staticmethod
-    def save_plot(fig: plt.Figure) -> bytes:
+    @classmethod
+    def save_plot(cls, fig: plt.Figure) -> bytes:
         """Saves a plot to png and returns its bytes."""
         bytes_image = io.BytesIO()
         fig.savefig(bytes_image, format='png')

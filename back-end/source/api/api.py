@@ -1,11 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Query, UploadFile, File, Depends, Body
-from fastapi.responses import Response,JSONResponse
+from fastapi import APIRouter, Query, UploadFile, File, Depends
+from fastapi.responses import Response, JSONResponse
 from pandas import DataFrame
 
 from source.api.schemas import DatasetSchema, UpdateColumnNames, UpdateColumnTypes, NormalizationType, \
-    Columns, ClusteringMethodSchema, MethodParameters
+    Columns, ClusteringMethodSchema
 from source.clustering.clustering import Clustering, ClusteringMethod
 from source.clustering.clustering_interactive import ClusteringInteractive
 from source.data_set import DataSet
@@ -152,22 +152,33 @@ async def get_data_types():
     return list(DataType)
 
 
-@router.post("/clustering/graph", summary="clustering graph")
+@router.post("/clustering/", summary="Perform clustering", response_model=str)
 async def perform_clustering(
     data_subset: Annotated[DataFrame, Depends(numerical_subset_dependency)],
-    method: ClusteringMethodSchema,
-    method_parameters: Annotated[MethodParameters | None, Body()] = None
+    method: ClusteringMethodSchema
 ):
     """
-    ## Generate a clustering graph.
+    ## Performs clustering
 
-    Applies chosen clustering method to the data, and returns plot of clustering performed with the method.
+    Applies chosen clustering method to the data, and returns id of the clustering result. Results are cached,
+    for later use by other endpoints.
+
     Possible methods can be found at `/clustering/methods`.
+
     `columns` parameter should contain list of column names from the current active dataset on which clustering
     will be performed.
     """
-    clustering_id = ClusteringInteractive.perform_clustering(data_subset,  method, method_parameters)
-    graph = ClusteringInteractive.visualize_clustering(clustering_id, data_subset)
+    return ClusteringInteractive.perform_clustering(data_subset,  method.name, method.parameters)
+
+
+@router.post("/clustering/{clustering_id}/plot", summary="Clustering plot")
+async def get_clusters_plot(clustering_id: str):
+    """
+    ## Generate a clustering plot.
+
+    Returns plot of the clustering identified by the clustering id.
+    """
+    graph = ClusteringInteractive.visualize_clustering(clustering_id)
     return Response(graph, media_type='text/html')
 
 
@@ -177,13 +188,13 @@ async def get_clustering_tendency(data_subset: Annotated[DataFrame, Depends(nume
     ## Return a hopkins statistic.
 
     Calculates a hopkins statistic for a chosen subset of the active dataset.
-    `columns` parameter should contain list of column names from the current active dataset no which clustering
+    `columns` parameter should contain list of column names from the current active dataset on which analysis
     will be performed.
     """
     return Clustering.hopkins_statistic(data_subset)
 
 
-@router.get("/clustering/methods", summary="clustering methods", response_model=list[ClusteringMethod])
+@router.get("/clustering/methods", summary="Clustering methods", response_model=list[ClusteringMethod])
 async def get_clustering_methods():
     """
     ## List available clustering methods.

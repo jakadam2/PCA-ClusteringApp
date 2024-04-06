@@ -47,10 +47,9 @@ from source.normalization import CatNormType, NumNormType
 
 
 class Column(BaseModel):
-    name: str = Field(..., description="The name of the column.")
-    type: DataType = Field(..., description="The data type of the column.")
-    values: List[Union[float, int, bool, str, datetime.datetime]] = Field(...,
-                                                                          description="A list of values contained in "
+    name: str = Field(description="The name of the column.")
+    type: DataType = Field(description="The data type of the column.")
+    values: List[Union[float, int, bool, str, datetime.datetime]] = Field(description="A list of values contained in "
                                                                                       "the column."
                                                                           )
 
@@ -65,8 +64,8 @@ class Column(BaseModel):
 
 
 class DatasetSchema(BaseModel):
-    name: str = Field(..., description="The name of the dataset.")
-    variables: List[Column] = Field(..., description="A list of columns that make up the dataset.")
+    name: str = Field(description="The name of the dataset.")
+    variables: List[Column] = Field(description="A list of columns that make up the dataset.")
 
     class Config:
         json_schema_extra = {
@@ -101,7 +100,7 @@ class DatasetSchema(BaseModel):
 
 
 class NormalizationType(BaseModel):
-    name: CatNormType | NumNormType = Field(..., description="The name of the normalization method.")
+    name: CatNormType | NumNormType = Field(description="The name of the normalization method.")
     compatible_types: List[DataType] | None = Field(default=None,
                                                     description="A list of data types compatible with this "
                                                                 "normalization method."
@@ -117,8 +116,8 @@ class NormalizationType(BaseModel):
 
 
 class Graph(BaseModel):
-    name: str = Field(..., description="The name of the graph.")
-    data: bytes = File(..., description="The binary data of the graph image.")
+    name: str = Field(description="The name of the graph.")
+    data: bytes = File(description="The binary data of the graph image.")
 
     class Config:
         json_schema_extra = {
@@ -130,7 +129,7 @@ class Graph(BaseModel):
 
 
 class UpdateColumnNames(BaseModel):
-    mapping: Dict[str, str] = Field(..., description="A mapping of old column names to new column names.")
+    mapping: Dict[str, str] = Field(description="A mapping of old column names to new column names.")
 
     class Config:
         json_schema_extra = {
@@ -144,7 +143,7 @@ class UpdateColumnNames(BaseModel):
 
 
 class UpdateColumnTypes(BaseModel):
-    mapping: Dict[str, DataType] = Field(..., description="A mapping of column names to their new data types.")
+    mapping: Dict[str, DataType] = Field(description="A mapping of column names to their new data types.")
 
     class Config:
         json_schema_extra = {
@@ -152,6 +151,22 @@ class UpdateColumnTypes(BaseModel):
                 "mapping": {
                     "column_name1": "numerical",
                     "column_name2": "categorical"
+                }
+            }
+        }
+
+
+class ClusteringMethodSchema(BaseModel):
+    name: ClusteringMethod = Field(description="Name of the clustering method.")
+    parameters: dict[str, Any] = Field(description="Parameters for the chosen method.")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "name": "Mean-shift",
+                "parameters": {
+                    "param_name1": 1.0,
+                    "param_name2": 0.5
                 }
             }
         }
@@ -166,18 +181,3 @@ Columns = Annotated[
     )
 ]
 
-ClusteringMethodSchema = Annotated[
-    ClusteringMethod,
-    Body(description="Name of the clustering method.", example="Mean-shift")
-]
-
-MethodParameters = Annotated[
-    dict[str, Any],
-    Body(
-        description="Parameters for the chosen method.",
-        example={
-            "param_name1": 1.0,
-            "param_name2": 0.5
-        }
-    ),
-]

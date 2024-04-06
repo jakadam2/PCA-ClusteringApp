@@ -15,14 +15,14 @@ from source.plotting import get_colour_palette_rgba
 
 class ClusteringInteractive(Clustering):
 
-    @staticmethod
-    def create_plot(data: DataFrame, clusters: ndarray):
+    @classmethod
+    def create_plot(cls, data: DataFrame, clusters: ndarray):
         """Produces plot of based on given data and it's labels representing clusters."""
-        reduced_data = Clustering.reduce_dimensionality(data)
+        reduced_data = cls.reduce_dimensionality(data)
 
-        fig = ClusteringInteractive.setup_figure()
-        ClusteringInteractive.histogram(clusters, fig, 4, 1)
-        ClusteringInteractive.cluster_plot(reduced_data, clusters, fig, 2, 1)
+        fig = cls.setup_figure()
+        cls.histogram(clusters, fig, 4, 1)
+        cls.cluster_plot(reduced_data, clusters, fig, 2, 1)
 
         return go.FigureWidget(fig)
 
@@ -50,8 +50,8 @@ class ClusteringInteractive(Clustering):
 
         return fig
 
-    @staticmethod
-    def cluster_plot(points: DataFrame, clusters: ndarray, fig: Figure, row: int, col: int) -> None:
+    @classmethod
+    def cluster_plot(cls, points: DataFrame, clusters: ndarray, fig: Figure, row: int, col: int) -> None:
         clusters_num = np.unique(clusters).size
         colors = get_colour_palette_rgba(clusters_num)
         min_y, max_y = float('inf'), -float('inf')
@@ -70,7 +70,7 @@ class ClusteringInteractive(Clustering):
             )
             fig.add_trace(scatter, row, col)
 
-            side_density = ClusteringInteractive.get_line_density(cluster_y)
+            side_density = cls.get_line_density(cluster_y)
             side_density_x, side_density_y = side_density[:, 0], side_density[:, 1]
 
             min_y = min(min_y, side_density_y.min())
@@ -84,7 +84,7 @@ class ClusteringInteractive(Clustering):
             )
             fig.add_trace(histogram_right, row=row, col=col + 1)
 
-            side_density = ClusteringInteractive.get_line_density(cluster_x)
+            side_density = cls.get_line_density(cluster_x)
             side_density_y, side_density_x = side_density[:, 0], side_density[:, 1]
 
             min_x = min(min_x, side_density_x.min())
@@ -133,10 +133,10 @@ class ClusteringInteractive(Clustering):
         fig.update_xaxes(title_text="Clusters", tickmode='array', tickvals=[], fixedrange=True, row=row, col=col)
         fig.update_yaxes(title_text="Count", fixedrange=True, row=row, col=col)
 
-    @staticmethod
-    def save_plot(fig: Figure) -> str:
+    @classmethod
+    def save_plot(cls, fig: Figure) -> str:
         """Saves a plot to html string."""
-        configs = ClusteringInteractive.get_configs()
+        configs = cls.get_configs()
         return fig.to_html(config=configs)
 
     @staticmethod
