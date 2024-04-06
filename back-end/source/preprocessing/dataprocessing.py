@@ -18,3 +18,4 @@ class DataProcessing:
     def get_categorical_columns(cls, dataset: DataFrame) -> list[str]:
         """Returns list of columns solely containing categorical(non numeric) data."""
         return dataset.select_dtypes(include='object', exclude=['datetime', 'timedelta']).columns.to_list()
+

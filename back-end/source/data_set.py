@@ -7,6 +7,8 @@ from source.data_type import DataType
 
 from fastapi import UploadFile
 
+from source.exceptions import NoActiveDataset
+
 
 class DataSetImplementation:
     """Implements all of functionalities of DataSet but it is not singleton"""
@@ -30,6 +32,8 @@ class DataSetImplementation:
     @property
     def data(self) -> pd.DataFrame:
         """Property to get DataFrame with going back mechanism"""
+        if self._data_set is None:
+            raise NoActiveDataset()
         return self._data_set
 
     @data.setter

@@ -1,38 +1,20 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Query, UploadFile, File, Depends, Body
-from fastapi.responses import Response,JSONResponse
+from fastapi import APIRouter, Query, UploadFile, File, Depends
+from fastapi.responses import Response, JSONResponse
 from pandas import DataFrame
 
+from source.api.dependencies import numerical_subset_dependency, clustering_id_dependency
 from source.api.schemas import DatasetSchema, UpdateColumnNames, UpdateColumnTypes, NormalizationType, \
-    Columns, ClusteringMethodSchema, MethodParameters
+    ClusteringMethodSchema, ClusteringStatistics, Column
 from source.clustering.clustering import Clustering, ClusteringMethod
 from source.clustering.clustering_interactive import ClusteringInteractive
 from source.data_set import DataSet
 from source.preprocessing.data_transformer import DataTransformer
 from source.data_type import DataType
-from source.exceptions import NonexistentColumnsException, NonNumericColumnsException
 from source.pca import PCA
 
 router = APIRouter(prefix="/api")
-
-
-async def subset_dependency(columns: Columns) -> DataFrame:
-    """Provides a subset of current active dataset."""
-    if not set(columns).issubset(DataSet().data.columns):
-        raise NonexistentColumnsException()
-
-    data_subset = DataSet().data[columns]
-    return data_subset
-
-
-async def numerical_subset_dependency(data_subset: Annotated[DataFrame, Depends(subset_dependency)]) -> DataFrame:
-    """Provides a subset of current active dataset and validates that all columns are of numeric type."""
-    numerical_columns = DataTransformer.get_numerical_columns(data_subset).size
-    if len(data_subset) != numerical_columns:
-        raise NonNumericColumnsException()
-
-    return data_subset
 
 
 @router.post("/file", summary="Upload a dataset")
@@ -99,8 +81,6 @@ async def get_components_graph():
     """
     graph = PCA.interactive_pca_results(DataSet().data)
     return Response(graph, media_type='text/html')
-    graph = PCA.components_graph(DataSet().data, DataSet().age)
-    return Response(graph.getvalue(), media_type='image/png')
 
 
 @router.get('/pca/transform', summary="PCA transformation result", response_model=DatasetSchema)
@@ -154,22 +134,64 @@ async def get_data_types():
     return list(DataType)
 
 
-@router.post("/clustering/graph", summary="clustering graph")
+@router.post("/clustering/", summary="Perform clustering", response_model=str)
 async def perform_clustering(
     data_subset: Annotated[DataFrame, Depends(numerical_subset_dependency)],
-    method: ClusteringMethodSchema,
-    method_parameters: Annotated[MethodParameters | None, Body()] = None
+    method: ClusteringMethodSchema
 ):
     """
-    ## Generate a clustering graph.
+    ## Performs clustering
 
-    Applies chosen clustering method to the data, and returns plot of clustering performed with the method.
+    Applies chosen clustering method to the data, and returns id of the clustering result. Results are cached,
+    for later use by other endpoints.
+
     Possible methods can be found at `/clustering/methods`.
+
     `columns` parameter should contain list of column names from the current active dataset on which clustering
     will be performed.
     """
-    graph = ClusteringInteractive.perform_clustering(data_subset, method, method_parameters)
+    return ClusteringInteractive.perform_clustering(data_subset,  method.name, method.parameters)
+
+
+@router.get("/clustering/{clustering_id}/plot", summary="Clustering plot")
+async def get_clusters_plot(clustering_id: Annotated[str, Depends(clustering_id_dependency)]):
+    """
+    ## Generate a clustering plot.
+
+    Returns plot of the clustering identified by the clustering id.
+    """
+    graph = ClusteringInteractive.visualize_clustering(clustering_id)
     return Response(graph, media_type='text/html')
+
+
+@router.get("/clustering/{clustering_id}/clusters", summary="Clusters", response_model=Column)
+async def get_clusters(clustering_id: Annotated[str, Depends(clustering_id_dependency)]):
+    """
+    ## Get clusters.
+
+    Returns a column of clusters, identified by the clustering id.
+    """
+    clusters = ClusteringInteractive.clusters_cache[clustering_id]
+    return Column(
+        name="Clusters",
+        type=DataType.CATEGORICAL,
+        values=clusters
+    )
+
+
+@router.get(
+    "/clustering/{clustering_id}/statistics",
+    summary="Clustering statistics",
+    response_model=ClusteringStatistics
+)
+async def get_clusters_statistics(clustering_id: Annotated[str, Depends(clustering_id_dependency)]):
+    """
+    ## Get a clustering statistics.
+
+    Returns statistics of the clustering result identified by the clustering id.
+    """
+    statistics = ClusteringInteractive.evaluate_clustering(clustering_id)
+    return ClusteringStatistics(statistics=statistics)
 
 
 @router.post("/clustering/clustering_tendency", summary="Clustering tendency")
@@ -178,13 +200,13 @@ async def get_clustering_tendency(data_subset: Annotated[DataFrame, Depends(nume
     ## Return a hopkins statistic.
 
     Calculates a hopkins statistic for a chosen subset of the active dataset.
-    `columns` parameter should contain list of column names from the current active dataset no which clustering
+    `columns` parameter should contain list of column names from the current active dataset on which analysis
     will be performed.
     """
     return Clustering.hopkins_statistic(data_subset)
 
 
-@router.get("/clustering/methods", summary="clustering methods", response_model=list[ClusteringMethod])
+@router.get("/clustering/methods", summary="Clustering methods", response_model=list[ClusteringMethod])
 async def get_clustering_methods():
     """
     ## List available clustering methods.

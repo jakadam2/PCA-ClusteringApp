@@ -1,17 +1,23 @@
+from typing import Optional
+
 import numpy as np
+import hashlib
 
 from enum import StrEnum
 from numpy import ndarray
 from pandas import DataFrame
 from abc import abstractmethod
+
+from sklearn import metrics
 from sklearn.cluster import estimate_bandwidth, MeanShift, AffinityPropagation, DBSCAN
 from matplotlib import pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 from sklearn.neighbors import NearestNeighbors
 
+from source.cache import Cache
 from source.preprocessing.data_transformer import DataTransformer
-from source.exceptions import InvalidMethodException
+from source.exceptions import InvalidMethodException, InvalidMethodArguments
 
 
 class ClusteringMethod(StrEnum):
@@ -21,6 +27,11 @@ class ClusteringMethod(StrEnum):
 
 
 class Clustering:
+    clusters_cache = Cache[ndarray](10e8)  # cache size of 100MB
+
+    # Stores a view of the datasets used for the clustering
+    dataset_cache = Cache[DataFrame](10e9, parent=clusters_cache)
+
     @staticmethod
     def affinity_propagation(data: DataFrame, params: dict) -> ndarray:
         """Performs clustering using affinity propagation algorithm."""
@@ -49,30 +60,54 @@ class Clustering:
             data: DataFrame,
             method: ClusteringMethod,
             method_parameters: dict,
-    ):
+    ) -> str:
         """Performs chosen clustering operation and returns plot of clusters."""
+        clustering_id = cls.get_clustering_id(data.columns.to_list(), method, method_parameters)
+        if clustering_id in Clustering.clusters_cache:
+            return clustering_id
+
         data = data[DataTransformer.get_numerical_columns(data)]
 
         if data.isna().values.any():
-            data.dropna(axis='rows', inplace=True)
+            data.dropna(axis='rows', inplace=True)  # is it a good idea to do it inplace?
 
         if method not in cls.clustering_methods:
             raise InvalidMethodException(method)
 
-        clusters = cls.clustering_methods[method](data, method_parameters)
-        plot = cls.visualize_clustering(data, clusters)
+        try:
+            clusters = cls.clustering_methods[method](data, method_parameters)
+        except TypeError:
+            raise InvalidMethodArguments(method)
 
-        return cls.save_plot(plot)
+        # caching results for later use
+        Clustering.clusters_cache.put(clustering_id, clusters)
+        Clustering.dataset_cache.put(clustering_id, data)
+
+        return clustering_id
 
     @staticmethod
+    def get_clustering_id(columns: list, method: ClusteringMethod, method_parameters: dict) -> str:
+        """Creates a unique key identifying a clustering result."""
+        raw_key = f"{method}{method_parameters}{columns}"
+        raw_key_bytes = raw_key.encode('utf-8')
+        return hashlib.md5(raw_key_bytes).hexdigest()
+
+    @classmethod
+    def visualize_clustering(cls: type["Clustering"], clustering_id: str):
+        clusters = cls.clusters_cache[clustering_id]
+        data = cls.dataset_cache[clustering_id]
+        plot = cls.create_plot(data, clusters)
+        return cls.save_plot(plot)
+
+    @classmethod
     @abstractmethod
-    def visualize_clustering(data: DataFrame, clusters: ndarray) -> plt.Figure:
+    def create_plot(cls, data: DataFrame, clusters: ndarray) -> plt.Figure:
         """Produces plot of clusters based on given data and it's labels representing clusters."""
         ...
 
-    @staticmethod
+    @classmethod
     @abstractmethod
-    def save_plot(plot):
+    def save_plot(cls, plot):
         ...
 
     @staticmethod
@@ -93,10 +128,10 @@ class Clustering:
 
         return result
 
-    @staticmethod
-    def get_clustering_methods() -> list[ClusteringMethod]:
+    @classmethod
+    def get_clustering_methods(cls: type["Clustering"]) -> list[ClusteringMethod]:
         """Returns all available clustering methods."""
-        return list(Clustering.clustering_methods.keys())
+        return list(cls.clustering_methods.keys())
 
     @staticmethod
     def hopkins_statistic(data: DataFrame, sample_size=0.1, seed=42) -> float:
@@ -122,6 +157,16 @@ class Clustering:
 
         u_distances, _ = neighbours.kneighbors(y_sample, n_neighbors=1, return_distance=True)
 
-        w_sum = (w_distances**dimensions).sum()
-        u_sum = (u_distances**dimensions).sum()
-        return u_sum/(u_sum + w_sum)
+        w_sum = (w_distances ** dimensions).sum()
+        u_sum = (u_distances ** dimensions).sum()
+        return u_sum / (u_sum + w_sum)
+
+    @classmethod
+    def evaluate_clustering(cls: type["Clustering"], clustering_id: str) -> dict[str, float]:
+        clusters = cls.clusters_cache[clustering_id]
+        data = cls.dataset_cache[clustering_id]
+        return {
+            "Silhouette Coefficient": metrics.silhouette_score(data, clusters),
+            "Calinski-Harabasz index": metrics.calinski_harabasz_score(data, clusters),
+            "Davies-Bouldin index": metrics.davies_bouldin_score(data, clusters),
+        }

@@ -76,7 +76,7 @@ class PCA:
     @classmethod
     def components_direction_graph(cls,fig:go.Figure) -> None:
         explained_variances = cls.explained_variance()
-        loadings = cls._pca.components_.T * np.sqrt(explained_variances)
+        loadings = cls._pca.components_.V * np.sqrt(explained_variances)
         colors = [color.to_str() for color in get_colour_palette_rgba(cls._columns_size)]
         for i, feature in enumerate(cls._columns_names):
             fig.add_trace(go.Scatter(
@@ -98,7 +98,7 @@ class PCA:
     def loadigns_graph(cls,fig:go.Figure) -> None:
         colors = [color.to_str() for color in get_colour_palette_rgba(cls._columns_size)]
         explained_variances = cls.explained_variance()
-        loadings = abs(cls._pca.components_.T * np.sqrt(explained_variances))
+        loadings = abs(cls._pca.components_.V * np.sqrt(explained_variances))
         loading_ratio = loadings/np.sum(loadings,axis = 0)
         top_labels = cls._columns_names
         y_labels = [f'PCA{i + 1}' for i in range(cls._columns_size)]
