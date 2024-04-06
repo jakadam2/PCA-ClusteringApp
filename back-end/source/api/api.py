@@ -150,7 +150,7 @@ async def perform_clustering(
     `columns` parameter should contain list of column names from the current active dataset on which clustering
     will be performed.
     """
-    return ClusteringInteractive.perform_clustering(data_subset,  method.name, method.parameters)
+    return ClusteringInteractive.perform_clustering(data_subset, DataSet().age, method.name, method.parameters)
 
 
 @router.get("/clustering/{clustering_id}/plot", summary="Clustering plot")

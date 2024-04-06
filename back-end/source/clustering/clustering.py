@@ -58,11 +58,12 @@ class Clustering:
     def perform_clustering(
             cls: type["Clustering"],
             data: DataFrame,
+            dataset_id: int,
             method: ClusteringMethod,
             method_parameters: dict,
     ) -> str:
         """Performs chosen clustering operation and returns plot of clusters."""
-        clustering_id = cls.get_clustering_id(data.columns.to_list(), method, method_parameters)
+        clustering_id = cls.get_clustering_id(dataset_id, data.columns.to_list(), method, method_parameters)
         if clustering_id in Clustering.clusters_cache:
             return clustering_id
 
@@ -86,9 +87,9 @@ class Clustering:
         return clustering_id
 
     @staticmethod
-    def get_clustering_id(columns: list, method: ClusteringMethod, method_parameters: dict) -> str:
+    def get_clustering_id(dataset_id: int, columns: list, method: ClusteringMethod, method_parameters: dict) -> str:
         """Creates a unique key identifying a clustering result."""
-        raw_key = f"{method}{method_parameters}{columns}"
+        raw_key = f"{method}{method_parameters}{dataset_id}{columns}"
         raw_key_bytes = raw_key.encode('utf-8')
         return hashlib.md5(raw_key_bytes).hexdigest()
 
