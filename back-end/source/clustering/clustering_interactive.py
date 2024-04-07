@@ -85,7 +85,7 @@ class ClusteringInteractive(Clustering):
                 )
                 fig.add_trace(histogram_right, row=row, col=col + 2)
 
-            if len(cluster_y) > 1:
+            if len(cluster_x) > 1:
                 side_density = cls.get_line_density(cluster_x)
                 side_density_y, side_density_x = side_density[:, 0], side_density[:, 1]
 
