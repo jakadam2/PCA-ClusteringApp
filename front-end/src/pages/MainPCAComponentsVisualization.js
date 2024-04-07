@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import MenuButton from "../components/buttons/MenuButton";
 import Chart from "../components/Chart";
 import { defaultButtonStyle } from "../common/styles";
+import Title from "../components/Title";
 
 const MainPCAComponentsVisualization = () => {
   const imageUrl = "http://localhost:8000/api/pca/graph";
@@ -39,8 +40,11 @@ const MainPCAComponentsVisualization = () => {
   }, []);
 
   return (
-    <div className="relative h-[450px] ">
-      <Chart src={img} />
+    <div className="relative h-[800px]">
+      <div className="-mb-5">
+        <Title title="PCA"/>
+      </div>
+      <Chart img={img} />
       <div className="left-0 right-0 flex justify-center items-center">
         <button
           className={defaultButtonStyle + "relative w-[200px]"}

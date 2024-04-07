@@ -19,6 +19,9 @@ class RGBA:
 
     def __str__(self) -> str:
         return f"rgba({self.r}, {self.g}, {self.b}, {self.a/255})"
+    
+    def __repr__(self) -> str:
+        return f"rgba({self.r}, {self.g}, {self.b}, {self.a/255})"
 
     def to_str(self) -> str:
         return str(self)
@@ -40,3 +43,5 @@ def get_colour_palette_rgba(n: int) -> list[RGBA]:
     """Returns color palette to be used for all the plots, each element being of class RGBA."""
     colours = get_colour_palette(n)
     return list(map(RGBA.from_tuple, colours))
+
+

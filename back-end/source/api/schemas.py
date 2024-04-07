@@ -33,23 +33,23 @@ clusteringDescription = {
     }
 """
 import datetime
-from typing import List, Union, Dict, Any
+from typing import List, Union, Dict, Any, Annotated
 
-from fastapi import File
+from annotated_types import MinLen
+from fastapi import File, Body
 from pandas import DataFrame
 from pydantic import BaseModel, Field
 
 from source.clustering.clustering import ClusteringMethod
-from source.data_transformer import DataTransformer
+from source.preprocessing.data_transformer import DataTransformer
 from source.data_type import DataType
 from source.normalization import CatNormType, NumNormType
 
 
 class Column(BaseModel):
-    name: str = Field(..., description="The name of the column.")
-    type: DataType = Field(..., description="The data type of the column.")
-    values: List[Union[float, int, bool, str, datetime.datetime]] = Field(...,
-                                                                          description="A list of values contained in "
+    name: str = Field(description="The name of the column.")
+    type: DataType = Field(description="The data type of the column.")
+    values: List[Union[float, int, bool, str, datetime.datetime]] = Field(description="A list of values contained in "
                                                                                       "the column."
                                                                           )
 
@@ -64,8 +64,8 @@ class Column(BaseModel):
 
 
 class DatasetSchema(BaseModel):
-    name: str = Field(..., description="The name of the dataset.")
-    variables: List[Column] = Field(..., description="A list of columns that make up the dataset.")
+    name: str = Field(description="The name of the dataset.")
+    variables: List[Column] = Field(description="A list of columns that make up the dataset.")
 
     class Config:
         json_schema_extra = {
@@ -100,24 +100,24 @@ class DatasetSchema(BaseModel):
 
 
 class NormalizationType(BaseModel):
-    name: CatNormType | NumNormType = Field(..., description="The name of the normalization method.")
-    compatible_types: List[DataType] = Field(...,
-                                             description="A list of data types compatible with this normalization "
-                                                         "method."
-                                             )
+    name: CatNormType | NumNormType = Field(description="The name of the normalization method.")
+    compatible_types: List[DataType] | None = Field(default=None,
+                                                    description="A list of data types compatible with this "
+                                                                "normalization method."
+                                                    )
 
     class Config:
         json_schema_extra = {
             "example": {
-                "name": "one_hot",
+                "name": "one_hot_encoding",
                 "compatible_types": ["categorical"]
             }
         }
 
 
 class Graph(BaseModel):
-    name: str = Field(..., description="The name of the graph.")
-    data: bytes = File(..., description="The binary data of the graph image.")
+    name: str = Field(description="The name of the graph.")
+    data: bytes = File(description="The binary data of the graph image.")
 
     class Config:
         json_schema_extra = {
@@ -129,7 +129,7 @@ class Graph(BaseModel):
 
 
 class UpdateColumnNames(BaseModel):
-    mapping: Dict[str, str] = Field(..., description="A mapping of old column names to new column names.")
+    mapping: Dict[str, str] = Field(description="A mapping of old column names to new column names.")
 
     class Config:
         json_schema_extra = {
@@ -143,7 +143,7 @@ class UpdateColumnNames(BaseModel):
 
 
 class UpdateColumnTypes(BaseModel):
-    mapping: Dict[str, DataType] = Field(..., description="A mapping of column names to their new data types.")
+    mapping: Dict[str, DataType] = Field(description="A mapping of column names to their new data types.")
 
     class Config:
         json_schema_extra = {
@@ -156,20 +156,30 @@ class UpdateColumnTypes(BaseModel):
         }
 
 
-class ClusteringDto(BaseModel):
-    method: ClusteringMethod = Field(..., description="Name of the clustering method.")
-    columns: list[str] = Field(..., description="A list of names of columns on which "
-                                                "the clustering method will be performed.")
-    method_parameters: dict[str, Any] = Field(..., description="Parameters for the chosen clustering method.")
+class ClusteringMethodSchema(BaseModel):
+    name: ClusteringMethod = Field(description="Name of the clustering method.")
+    parameters: dict[str, Any] = Field(description="Parameters for the chosen method.")
 
     class Config:
         json_schema_extra = {
             "example": {
-                "method": "Mean-shift",
-                "columns": ["column_name1", "column_name2"],
-                "method_parameters": {
+                "name": "Mean-shift",
+                "parameters": {
                     "param_name1": 1.0,
                     "param_name2": 0.5
                 }
+            }
+        }
+
+
+class ClusteringStatistics(BaseModel):
+    statistics: dict[str, float] = Field(description="[Statistics of the clustering.")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "Silhouette Coefficient": 0.1,
+                "Calinski-Harabasz index": 0.5,
+                "Davies-Bouldin index": 2.7,
             }
         }
