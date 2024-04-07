@@ -6,6 +6,83 @@ import Title from "../components/Title";
 
 const ROWS = 10;
 
+const AlgorithmOptions = ({ algorithm }) => {
+  if (algorithm === "Affinity Propagation")
+    return (
+      <div>
+        <header> Parameters: </header>
+        <label for="damping factor">Damping factor (0.5, 1.0): </label>
+        <input
+          className="bg-blue-400"
+          name="damping factor"
+          type="number"
+          min="0.5"
+          max="1.0"
+          step="0.05"
+          defaultValue="0.5"
+        />
+      </div>
+    );
+  if (algorithm === "Dbscan")
+    return (
+      <div>
+        <div>
+          <header> Parameters: </header>
+          <label for="eps">{"Epsilon:"} </label>
+          <input
+            className="bg-blue-400"
+            name="eps"
+            type="number"
+            min="0.05"
+            step="0.05"
+            defaultValue="0.5"
+          />
+          <text>
+            The maximum distance between two samples for one to be considered as
+            in the neighborhood of the other.
+          </text>
+
+          <label for="min_samples">Min samples: </label>
+          <input
+            className="bg-blue-400"
+            name="min_samples"
+            type="number"
+            min="2"
+            defaultValue="5"
+          />
+          <text>
+            The number of samples in a neighborhood for a point to be considered
+            as a core point. This includes the point itself.
+          </text>
+          <label for="metric">Metric: </label>
+
+          <select className={dropdownListStyle} defaultValue={"euclidean"}>
+            <option key={"euclidean"} value={"euclidean"}>
+              euclidean
+            </option>
+            <option key={"manhattan"} value={"manhattan"}>
+              manhattan
+            </option>
+            <option key={"cosine"} value={"cosine"}>
+              cosine
+            </option>
+            <option key={"l1"} value={"l1"}>
+              l1
+            </option>
+            <option key={"l2"} value={"l2"}>
+              l2
+            </option>
+          </select>
+          <text>
+            The metric to use when calculating distance between instances in a
+            feature array.
+          </text>
+        </div>
+      </div>
+    );
+  return;
+};
+
 const ClusterizationOptions = () => {
   const [clusterizationMethods, setClusterizationMethods] = useState([]);
   const [currAlgorithm, setCurrAlgorithm] = useState("");
@@ -73,7 +150,7 @@ const ClusterizationOptions = () => {
 
   return (
     <div className="relative h-[450px]">
-      <Title title="Klastryzacja"/>
+      <Title title="Klastryzacja" />
       <div className="relative h-96">
         <div className="max-h-80 overflow-scroll bg-main-50 thin-scrollbar w-auto mx-auto">
           <table className="divide-y divide-gray-200 w-full">
@@ -158,6 +235,7 @@ const ClusterizationOptions = () => {
             );
           })}
         </select>
+        <AlgorithmOptions algorithm={currAlgorithm} />
         <div className="my-2 left-0 right-0 flex justify-center items-center">
           <MenuButton />
           &nbsp;&nbsp;&nbsp;
