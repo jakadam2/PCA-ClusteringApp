@@ -80,7 +80,7 @@ async def get_components_graph():
     of the currently active dataset.
     """
     graph = PCA.interactive_pca_results(DataSet().data)
-    return Response(graph, media_type='text/html')
+    return Response(graph, media_type='application/json')
 
 
 @router.get('/pca/transform', summary="PCA transformation result", response_model=DatasetSchema)
@@ -161,7 +161,7 @@ async def get_clusters_plot(clustering_id: Annotated[str, Depends(clustering_id_
     Returns plot of the clustering identified by the clustering id.
     """
     graph = ClusteringInteractive.visualize_clustering(clustering_id)
-    return Response(graph, media_type='text/html')
+    return Response(graph, media_type='application/json')
 
 
 @router.get("/clustering/{clustering_id}/clusters", summary="Clusters", response_model=Column)
