@@ -129,7 +129,7 @@ class Clustering:
 
         if len(data.columns) > 2:
             tsne = TSNE(n_components=2, init='random', random_state=42)
-            data = DataFrame(tsne.fit_transform(data), columns=['tsne 0', 'tsne 1'])
+            data = DataFrame(tsne.fit_transform(data), columns=['tsne0', 'tsne1'])
 
         return data
 

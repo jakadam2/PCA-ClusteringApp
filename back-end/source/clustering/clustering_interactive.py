@@ -83,7 +83,7 @@ class ClusteringInteractive(Clustering):
                     showlegend=False, legendgroup=f"group{cluster_id}", name=str(cluster_id),
                     hoverinfo='skip'
                 )
-                fig.add_trace(histogram_right, row=row, col=col + 2)
+                fig.add_trace(histogram_right, row=row, col=col + 1)
 
             if len(cluster_x) > 1:
                 side_density = cls.get_line_density(cluster_x)
