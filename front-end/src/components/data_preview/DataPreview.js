@@ -21,7 +21,6 @@ const DataPreview = ({
   }, []);
 
   useEffect(() => {
-    console.log(data);
     setVariables(
       data["dataset"] !== undefined ? data["dataset"]["variables"] : []
     );
@@ -38,7 +37,9 @@ const DataPreview = ({
       for (let variable of data["dataset"]["variables"]) {
         let i = 0;
         for (let value of variable["values"]) {
-          valuesCurr[i].push(value);
+          valuesCurr[i].push(
+            variable["type"] === "numerical" ? Number(value).toFixed(4) : value
+          );
           i++;
           if (i === ROWS) {
             break;
