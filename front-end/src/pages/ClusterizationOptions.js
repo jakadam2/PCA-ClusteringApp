@@ -6,14 +6,35 @@ import Title from "../components/Title";
 
 const ROWS = 10;
 
-const AlgorithmOptions = ({ algorithm }) => {
+const AlgorithmOptions = ({ algorithm, params, setParams }) => {
   if (algorithm === "Affinity Propagation")
     return (
+
+          <label for="damping factor" >Damping factor (0.5, 1.0): </label>
       <div className="my-5 mx-2">
         <header className="text-xl font-semibold text-center mb-2 text-main-dark"> {algorithm} Parameters </header>
-
-        <div className="flex items-center mb-4">
-          <label for="damping factor" className="text-gray-600 min-w-fit mr-2">Damping factor (0.5, 1.0): </label>
+  <div className="flex items-center mb-4">
+        <label for="damping factor" className="text-gray-600 min-w-fit mr-2">Damping factor (0.5, 1.0): </label>
+        <input
+          className="bg-blue-400"
+          name="damping factor"
+          type="number"
+          min="0.5"
+          max="1.0"
+          step="0.05"
+          defaultValue="0.5"
+          onChange={(val) => {
+            setParams({ damping: val.target.value });
+          }}
+        />
+      </div>
+    );
+  if (algorithm === "Dbscan")
+    return (
+      <div>
+        <div>
+          <header> Parameters: </header>
+          <label for="eps">{"Epsilon:"} </label>
           <input
             className="bg-main-100 rounded-md px-2 focus:outline-none text-main-dark w-full"
             name="damping factor"
@@ -22,6 +43,9 @@ const AlgorithmOptions = ({ algorithm }) => {
             max="1.0"
             step="0.05"
             defaultValue="0.5"
+            onChange={(val) => {
+              setParams({ ...params, eps: val.target.value });
+            }}
           />
           </div>
       </div>
@@ -58,6 +82,9 @@ const AlgorithmOptions = ({ algorithm }) => {
               type="number"
               min="2"
               defaultValue="5"
+onChange={(val) => {
+              setParams({ ...params, min_samples: val.target.value });
+            }}
             />
           </div>
           <div className="text-gray-600 text-xs">
@@ -69,7 +96,9 @@ const AlgorithmOptions = ({ algorithm }) => {
         <div className="mb-4">
           <div className="flex items-center">
             <label htmlFor="metric" className="text-gray-600 mr-2">Metric:</label>
-            <select className={`${dropdownListStyle} focus:outline-none`} defaultValue={"euclidean"}>
+            <select className={`${dropdownListStyle} focus:outline-none`} defaultValue={"euclidean"} onChange={(val) => {
+              setParams({ ...params, metric: val.target.value });
+            }}>
               <option key={"euclidean"} value={"euclidean"}>euclidean</option>
               <option key={"manhattan"} value={"manhattan"}>manhattan</option>
               <option key={"cosine"} value={"cosine"}>cosine</option>
@@ -94,6 +123,7 @@ const ClusterizationOptions = () => {
   const [data, setData] = useState([]);
   const [checkedState, setCheckedState] = useState([]);
   const [checkedColumns, setCheckedColumns] = useState([]);
+  const [algorithmParams, setAlgorithmParams] = useState({});
 
   useEffect(() => {
     const requestMethods = fetch(
@@ -107,6 +137,7 @@ const ClusterizationOptions = () => {
     Promise.all([requestMethods, requestDataset]).then(([methods, dataset]) => {
       setClusterizationMethods(methods);
       setCurrAlgorithm(methods[0]);
+      setAlgorithmParams({});
       setData({
         dataset: dataset,
       });
@@ -114,9 +145,18 @@ const ClusterizationOptions = () => {
     });
   }, []);
 
+  useEffect(() => {
+    const currCheckedColumns = checkedState
+      .map((item, index) => (item ? headers[index] : ""))
+      .filter((elem) => elem !== "");
+
+    setCheckedColumns(currCheckedColumns);
+  }, [checkedState]);
+
   const changeAlgorithm = (event) => {
     console.log(`Algorithm method changed to: ${event.target.value}`);
     setCurrAlgorithm(event.target.value);
+    setAlgorithmParams({});
   };
 
   const handleCheckboxChange = (header, columnId) => {
@@ -125,12 +165,6 @@ const ClusterizationOptions = () => {
       index === columnId ? !item : item
     );
     setCheckedState(updatedCheckedState);
-
-    const currCheckedColumns = checkedState
-      .map((item, index) => (item ? headers[index] : ""))
-      .filter((elem) => elem !== "");
-
-    setCheckedColumns(currCheckedColumns);
   };
 
   const variables =
@@ -147,7 +181,9 @@ const ClusterizationOptions = () => {
     for (let variable of data["dataset"]["variables"]) {
       let i = 0;
       for (let value of variable["values"]) {
-        values[i].push(value);
+        values[i].push(
+          variable["type"] === "numerical" ? Number(value).toFixed(4) : value
+        );
         i++;
       }
     }
@@ -194,6 +230,7 @@ const ClusterizationOptions = () => {
                         type="checkbox"
                         checked={checkedState[columnId]}
                         className="accent-main-medium"
+                        disabled={variables[columnId]["type"] !== "numerical"}
                         onChange={() => {
                           handleCheckboxChange(header, columnId);
                         }}
@@ -240,13 +277,21 @@ const ClusterizationOptions = () => {
             );
           })}
         </select>
-        <AlgorithmOptions algorithm={currAlgorithm} />
+        <AlgorithmOptions
+          algorithm={currAlgorithm}
+          setParams={setAlgorithmParams}
+          params={algorithmParams}
+        />
         <div className="my-2 left-0 right-0 flex justify-center items-center">
           <MenuButton />
           &nbsp;&nbsp;&nbsp;
           <NewPageButton
             path={"/clusterization-visualization"}
-            state={{ algorithm: currAlgorithm, columns: checkedColumns }}
+            state={{
+              algorithm: currAlgorithm,
+              columns: checkedColumns,
+              algorithmParams: algorithmParams,
+            }}
           />
         </div>
       </div>
