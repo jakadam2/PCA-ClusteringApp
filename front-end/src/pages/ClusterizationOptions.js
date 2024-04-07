@@ -6,7 +6,7 @@ import Title from "../components/Title";
 
 const ROWS = 10;
 
-const AlgorithmOptions = ({ algorithm }) => {
+const AlgorithmOptions = ({ algorithm, params, setParams }) => {
   if (algorithm === "Affinity Propagation")
     return (
       <div>
@@ -20,6 +20,9 @@ const AlgorithmOptions = ({ algorithm }) => {
           max="1.0"
           step="0.05"
           defaultValue="0.5"
+          onChange={(val) => {
+            setParams({ damping: val.target.value });
+          }}
         />
       </div>
     );
@@ -36,6 +39,9 @@ const AlgorithmOptions = ({ algorithm }) => {
             min="0.05"
             step="0.05"
             defaultValue="0.5"
+            onChange={(val) => {
+              setParams({ ...params, eps: val.target.value });
+            }}
           />
           <text>
             The maximum distance between two samples for one to be considered as
@@ -49,6 +55,9 @@ const AlgorithmOptions = ({ algorithm }) => {
             type="number"
             min="2"
             defaultValue="5"
+            onChange={(val) => {
+              setParams({ ...params, min_samples: val.target.value });
+            }}
           />
           <text>
             The number of samples in a neighborhood for a point to be considered
@@ -56,7 +65,13 @@ const AlgorithmOptions = ({ algorithm }) => {
           </text>
           <label for="metric">Metric: </label>
 
-          <select className={dropdownListStyle} defaultValue={"euclidean"}>
+          <select
+            className={dropdownListStyle}
+            defaultValue={"euclidean"}
+            onChange={(val) => {
+              setParams({ ...params, metric: val.target.value });
+            }}
+          >
             <option key={"euclidean"} value={"euclidean"}>
               euclidean
             </option>
@@ -89,6 +104,7 @@ const ClusterizationOptions = () => {
   const [data, setData] = useState([]);
   const [checkedState, setCheckedState] = useState([]);
   const [checkedColumns, setCheckedColumns] = useState([]);
+  const [algorithmParams, setAlgorithmParams] = useState({});
 
   useEffect(() => {
     const requestMethods = fetch(
@@ -102,6 +118,7 @@ const ClusterizationOptions = () => {
     Promise.all([requestMethods, requestDataset]).then(([methods, dataset]) => {
       setClusterizationMethods(methods);
       setCurrAlgorithm(methods[0]);
+      setAlgorithmParams({});
       setData({
         dataset: dataset,
       });
@@ -109,9 +126,18 @@ const ClusterizationOptions = () => {
     });
   }, []);
 
+  useEffect(() => {
+    const currCheckedColumns = checkedState
+      .map((item, index) => (item ? headers[index] : ""))
+      .filter((elem) => elem !== "");
+
+    setCheckedColumns(currCheckedColumns);
+  }, [checkedState]);
+
   const changeAlgorithm = (event) => {
     console.log(`Algorithm method changed to: ${event.target.value}`);
     setCurrAlgorithm(event.target.value);
+    setAlgorithmParams({});
   };
 
   const handleCheckboxChange = (header, columnId) => {
@@ -120,12 +146,6 @@ const ClusterizationOptions = () => {
       index === columnId ? !item : item
     );
     setCheckedState(updatedCheckedState);
-
-    const currCheckedColumns = checkedState
-      .map((item, index) => (item ? headers[index] : ""))
-      .filter((elem) => elem !== "");
-
-    setCheckedColumns(currCheckedColumns);
   };
 
   const variables =
@@ -142,7 +162,9 @@ const ClusterizationOptions = () => {
     for (let variable of data["dataset"]["variables"]) {
       let i = 0;
       for (let value of variable["values"]) {
-        values[i].push(value);
+        values[i].push(
+          variable["type"] === "numerical" ? Number(value).toFixed(4) : value
+        );
         i++;
       }
     }
@@ -189,6 +211,7 @@ const ClusterizationOptions = () => {
                         type="checkbox"
                         checked={checkedState[columnId]}
                         className="accent-main-medium"
+                        disabled={variables[columnId]["type"] !== "numerical"}
                         onChange={() => {
                           handleCheckboxChange(header, columnId);
                         }}
@@ -235,13 +258,21 @@ const ClusterizationOptions = () => {
             );
           })}
         </select>
-        <AlgorithmOptions algorithm={currAlgorithm} />
+        <AlgorithmOptions
+          algorithm={currAlgorithm}
+          setParams={setAlgorithmParams}
+          params={algorithmParams}
+        />
         <div className="my-2 left-0 right-0 flex justify-center items-center">
           <MenuButton />
           &nbsp;&nbsp;&nbsp;
           <NewPageButton
             path={"/clusterization-visualization"}
-            state={{ algorithm: currAlgorithm, columns: checkedColumns }}
+            state={{
+              algorithm: currAlgorithm,
+              columns: checkedColumns,
+              algorithmParams: algorithmParams,
+            }}
           />
         </div>
       </div>
