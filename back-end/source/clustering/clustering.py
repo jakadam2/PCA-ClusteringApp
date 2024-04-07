@@ -117,17 +117,21 @@ class Clustering:
         if len(data.columns) <= 2:
             return data
 
-        if len(data.columns) > 50:  # somewhat arbitrary number, taken from scikit-learn guide on t-SNE
-            pca = PCA(n_components=50)
-            data = pca.fit_transform(data)
+        size_threshold = 1e4
+        _, columns = data.shape
 
-        tsne = TSNE(n_components=2)
-        result = tsne.fit_transform(data)
+        if data.size > size_threshold:
+            n_components = columns//(data.size/size_threshold)
+            n_components = max(int(n_components), 2)
 
-        if isinstance(result, np.ndarray):
-            result = DataFrame.from_records(result, columns=['tsne0', 'tsne1'])
+            pca = PCA(n_components=n_components)
+            data = DataFrame(pca.fit_transform(data), columns=['pca 0', 'pca 1'])
 
-        return result
+        if len(data.columns) > 2:
+            tsne = TSNE(n_components=2, init='random', random_state=42)
+            data = DataFrame(tsne.fit_transform(data), columns=['tsne 0', 'tsne 1'])
+
+        return data
 
     @classmethod
     def get_clustering_methods(cls: type["Clustering"]) -> list[ClusteringMethod]:
