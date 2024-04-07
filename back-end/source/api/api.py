@@ -84,14 +84,14 @@ async def get_components_graph():
 
 
 @router.get('/pca/transform', summary="PCA transformation result", response_model=DatasetSchema)
-async def get_pca():
+async def get_pca(rows: Annotated[int, Query(gt=1)]):
     """
     ## Get the result of PCA transformation.
 
     This endpoint applies PCA transformation to the current active dataset and returns the transformed dataset schema.
     """
     transformed_data = PCA.transform(DataSet().data, DataSet().age)
-    return DatasetSchema.from_data_frame(transformed_data)
+    return DatasetSchema.from_data_frame(transformed_data.head(n = rows))
 
 
 @router.put('/pca/transform', summary="Perform PCA")

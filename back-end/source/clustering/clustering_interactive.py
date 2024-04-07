@@ -136,8 +136,7 @@ class ClusteringInteractive(Clustering):
 
     @classmethod
     def save_plot(cls, fig: Figure) -> str:
-        """Saves a plot to html string."""
-        configs = cls.get_configs()
+        """Saves a plot to json string."""
         return fig.to_json()
 
     @staticmethod
