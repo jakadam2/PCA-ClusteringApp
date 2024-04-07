@@ -9,32 +9,14 @@ const ROWS = 10;
 const AlgorithmOptions = ({ algorithm, params, setParams }) => {
   if (algorithm === "Affinity Propagation")
     return (
-
-          <label for="damping factor" >Damping factor (0.5, 1.0): </label>
       <div className="my-5 mx-2">
-        <header className="text-xl font-semibold text-center mb-2 text-main-dark"> {algorithm} Parameters </header>
-  <div className="flex items-center mb-4">
-        <label for="damping factor" className="text-gray-600 min-w-fit mr-2">Damping factor (0.5, 1.0): </label>
-        <input
-          className="bg-blue-400"
-          name="damping factor"
-          type="number"
-          min="0.5"
-          max="1.0"
-          step="0.05"
-          defaultValue="0.5"
-          onChange={(val) => {
-            setParams({ damping: val.target.value });
-          }}
-        />
-      </div>
-    );
-  if (algorithm === "Dbscan")
-    return (
-      <div>
-        <div>
-          <header> Parameters: </header>
-          <label for="eps">{"Epsilon:"} </label>
+        <header className="text-xl font-semibold text-center mb-2 text-main-dark">
+          {algorithm} Parameters
+        </header>
+        <div className="flex items-center mb-4">
+          <label for="damping factor" className="text-gray-600 min-w-fit mr-2">
+            Damping factor (0.5, 1.0):
+          </label>
           <input
             className="bg-main-100 rounded-md px-2 focus:outline-none text-main-dark w-full"
             name="damping factor"
@@ -44,75 +26,104 @@ const AlgorithmOptions = ({ algorithm, params, setParams }) => {
             step="0.05"
             defaultValue="0.5"
             onChange={(val) => {
-              setParams({ ...params, eps: val.target.value });
+              setParams({ damping: val.target.value });
             }}
           />
-          </div>
+        </div>
       </div>
     );
   if (algorithm === "Dbscan")
     return (
       <div className="my-5">
         <div>
-          <header className="text-xl font-semibold text-center mb-2 text-main-dark"> {algorithm} Parameters </header>
+          <header className="text-xl font-semibold text-center mb-2 text-main-dark">
+            {algorithm} Parameters
+          </header>
           <div className="mb-4">
-          <div className="flex items-center">
-            <label htmlFor="eps" className="text-gray-600 mr-2">{"Epsilon:"} </label>
-            <input
-              className="bg-main-100 rounded-md px-2 focus:outline-none text-main-dark w-full"
-              name="eps"
-              type="number"
-              min="0.05"
-              step="0.05"
-              defaultValue="0.5"
-            />
+            <div className="flex items-center">
+              <label htmlFor="eps" className="text-gray-600 mr-2">
+                {"Epsilon:"}{" "}
+              </label>
+              <input
+                className="bg-main-100 rounded-md px-2 focus:outline-none text-main-dark w-full"
+                name="damping factor"
+                type="number"
+                min="0.5"
+                max="1.0"
+                step="0.05"
+                defaultValue="0.5"
+                onChange={(val) => {
+                  setParams({ ...params, eps: val.target.value });
+                }}
+              />
+            </div>
+            <div className="text-gray-600 text-xs">
+              The maximum distance between two samples for one to be considered
+              as in the neighborhood of the other.
+            </div>
           </div>
-          <div className="text-gray-600 text-xs">
-            The maximum distance between two samples for one to be considered as
-            in the neighborhood of the other.
-          </div>
-        </div>
 
-        <div className="mb-4">
-          <div className="flex items-center">
-            <label htmlFor="min_samples" className="text-gray-600 mr-2 min-w-fit">Min samples: </label>
-            <input
-              className="bg-main-100 rounded-md px-2 focus:outline-none text-main-dark w-full"
-              name="min_samples"
-              type="number"
-              min="2"
-              defaultValue="5"
-onChange={(val) => {
-              setParams({ ...params, min_samples: val.target.value });
-            }}
-            />
+          <div className="mb-4">
+            <div className="flex items-center">
+              <label
+                htmlFor="min_samples"
+                className="text-gray-600 mr-2 min-w-fit"
+              >
+                Min samples:{" "}
+              </label>
+              <input
+                className="bg-main-100 rounded-md px-2 focus:outline-none text-main-dark w-full"
+                name="min_samples"
+                type="number"
+                min="2"
+                defaultValue="5"
+                onChange={(val) => {
+                  setParams({ ...params, min_samples: val.target.value });
+                }}
+              />
+            </div>
+            <div className="text-gray-600 text-xs">
+              The number of samples in a neighborhood for a point to be
+              considered as a core point. This includes the point itself.
+            </div>
           </div>
-          <div className="text-gray-600 text-xs">
-            The number of samples in a neighborhood for a point to be considered
-            as a core point. This includes the point itself.
-          </div>
-        </div>
 
-        <div className="mb-4">
-          <div className="flex items-center">
-            <label htmlFor="metric" className="text-gray-600 mr-2">Metric:</label>
-            <select className={`${dropdownListStyle} focus:outline-none`} defaultValue={"euclidean"} onChange={(val) => {
-              setParams({ ...params, metric: val.target.value });
-            }}>
-              <option key={"euclidean"} value={"euclidean"}>euclidean</option>
-              <option key={"manhattan"} value={"manhattan"}>manhattan</option>
-              <option key={"cosine"} value={"cosine"}>cosine</option>
-              <option key={"l1"} value={"l1"}>l1</option>
-              <option key={"l2"} value={"l2"}>l2</option>
-            </select>
-          </div>
-          <div className="text-gray-600 text-xs">
-            The metric to use when calculating distance between instances in a
-            feature array.
+          <div className="mb-4">
+            <div className="flex items-center">
+              <label htmlFor="metric" className="text-gray-600 mr-2">
+                Metric:
+              </label>
+              <select
+                className={`${dropdownListStyle} focus:outline-none`}
+                defaultValue={"euclidean"}
+                onChange={(val) => {
+                  setParams({ ...params, metric: val.target.value });
+                }}
+              >
+                <option key={"euclidean"} value={"euclidean"}>
+                  euclidean
+                </option>
+                <option key={"manhattan"} value={"manhattan"}>
+                  manhattan
+                </option>
+                <option key={"cosine"} value={"cosine"}>
+                  cosine
+                </option>
+                <option key={"l1"} value={"l1"}>
+                  l1
+                </option>
+                <option key={"l2"} value={"l2"}>
+                  l2
+                </option>
+              </select>
+            </div>
+            <div className="text-gray-600 text-xs">
+              The metric to use when calculating distance between instances in a
+              feature array.
+            </div>
           </div>
         </div>
       </div>
-    </div>
     );
   return;
 };
