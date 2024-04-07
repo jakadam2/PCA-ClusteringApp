@@ -70,33 +70,35 @@ class ClusteringInteractive(Clustering):
             )
             fig.add_trace(scatter, row, col)
 
-            side_density = cls.get_line_density(cluster_y)
-            side_density_x, side_density_y = side_density[:, 0], side_density[:, 1]
+            if len(cluster_y) > 1:
+                side_density = cls.get_line_density(cluster_y)
+                side_density_x, side_density_y = side_density[:, 0], side_density[:, 1]
 
-            min_y = min(min_y, side_density_y.min())
-            max_y = max(max_y, side_density_y.max())
+                min_y = min(min_y, side_density_y.min())
+                max_y = max(max_y, side_density_y.max())
 
-            histogram_right = go.Scatter(
-                x=side_density_x, y=side_density_y, mode='lines',
-                fill='tozerox', fillcolor=color.change_alfa(0.4).to_str(), marker=dict(color=str(color)),
-                showlegend=False, legendgroup=f"group{cluster_id}", name=str(cluster_id),
-                hoverinfo='skip'
-            )
-            fig.add_trace(histogram_right, row=row, col=col + 1)
+                histogram_right = go.Scatter(
+                    x=side_density_x, y=side_density_y, mode='lines',
+                    fill='tozerox', fillcolor=color.change_alfa(0.4).to_str(), marker=dict(color=str(color)),
+                    showlegend=False, legendgroup=f"group{cluster_id}", name=str(cluster_id),
+                    hoverinfo='skip'
+                )
+                fig.add_trace(histogram_right, row=row, col=col + 2)
 
-            side_density = cls.get_line_density(cluster_x)
-            side_density_y, side_density_x = side_density[:, 0], side_density[:, 1]
+            if len(cluster_y) > 1:
+                side_density = cls.get_line_density(cluster_x)
+                side_density_y, side_density_x = side_density[:, 0], side_density[:, 1]
 
-            min_x = min(min_x, side_density_x.min())
-            max_x = max(max_x, side_density_x.max())
+                min_x = min(min_x, side_density_x.min())
+                max_x = max(max_x, side_density_x.max())
 
-            histogram_top = go.Scatter(
-                x=side_density_x, y=side_density_y, mode='lines',
-                fill='tozeroy', fillcolor=color.change_alfa(0.4).to_str(), marker=dict(color=str(color)),
-                showlegend=False, legendgroup=f"group{cluster_id}", name=str(cluster_id),
-                hoverinfo='skip'
-            )
-            fig.add_trace(histogram_top, row=row - 1, col=col)
+                histogram_top = go.Scatter(
+                    x=side_density_x, y=side_density_y, mode='lines',
+                    fill='tozeroy', fillcolor=color.change_alfa(0.4).to_str(), marker=dict(color=str(color)),
+                    showlegend=False, legendgroup=f"group{cluster_id}", name=str(cluster_id),
+                    hoverinfo='skip'
+                )
+                fig.add_trace(histogram_top, row=row - 1, col=col)
 
         fig.update_xaxes(fixedrange=True, tickmode='array', tickvals=[], row=row, col=col + 1)
         fig.update_yaxes(matches='y2', tickmode='array', tickvals=[], row=row, col=col + 1)
