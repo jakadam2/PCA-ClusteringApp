@@ -6,12 +6,59 @@ import Title from "../components/Title";
 
 const ROWS = 10;
 
+const HoppkinsStatistics = ({ columns }) => {
+  const [hStat, setHStat] = useState();
+  const fetchStatistic = async () => {
+    try {
+      console.log(JSON.stringify(columns));
+      const response = await fetch(
+        "http://localhost:8000/api/clustering/clustering_tendency",
+        {
+          //mode: "no-cors",
+          headers: {
+            "Content-Type": "application/json",
+            accept: "application/json",
+          },
+          method: "POST",
+          body: JSON.stringify(columns),
+        }
+      );
+
+      if (!response.ok) {
+        const errorMsg = await response.statusText;
+        throw new Error(`${errorMsg}`);
+      }
+
+      const fetchedHStat = await response.json();
+      setHStat(fetchedHStat.toFixed(4));
+    } catch (error) {
+      console.error("Error fetching Hoppkins statistic:", error);
+      setHStat(undefined);
+    }
+  };
+
+  useEffect(() => {
+    fetchStatistic();
+  }, [columns]);
+
+  return (
+    <div className="my-5 mx-2">
+      <header className="text-xl font-semibold text-center mb-2 text-main-dark">
+        Statystyka Hoppkins'a dla wybranych zmiennych
+      </header>
+      <header className="text-xl text-center mb-2 text-main-dark">
+        {hStat !== undefined ? hStat : "-"}
+      </header>
+    </div>
+  );
+};
+
 const AlgorithmOptions = ({ algorithm, params, setParams }) => {
   if (algorithm === "Affinity Propagation")
     return (
       <div className="my-5 mx-2">
         <header className="text-xl font-semibold text-center mb-2 text-main-dark">
-          {algorithm} Parameters
+          Parametry {algorithm}
         </header>
         <div className="flex items-center mb-4">
           <label for="damping factor" className="text-gray-600 min-w-fit mr-2">
@@ -37,7 +84,7 @@ const AlgorithmOptions = ({ algorithm, params, setParams }) => {
       <div className="my-5">
         <div>
           <header className="text-xl font-semibold text-center mb-2 text-main-dark">
-            {algorithm} Parameters
+            Parametry {algorithm}
           </header>
           <div className="mb-4">
             <div className="flex items-center">
@@ -275,6 +322,10 @@ const ClusterizationOptions = () => {
       </div>
 
       <div className="left-[25%] relative w-[50%]  justify-center items-center">
+        <HoppkinsStatistics columns={checkedColumns} />
+        <header className="text-xl font-semibold text-center mb-2 text-main-dark">
+          Algorytm klasteryzacji
+        </header>
         <select
           className={dropdownListStyle}
           onChange={(event) => changeAlgorithm(event)}
@@ -293,6 +344,7 @@ const ClusterizationOptions = () => {
           setParams={setAlgorithmParams}
           params={algorithmParams}
         />
+
         <div className="my-2 left-0 right-0 flex justify-center items-center">
           <MenuButton />
           &nbsp;&nbsp;&nbsp;
