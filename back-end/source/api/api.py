@@ -80,7 +80,7 @@ async def get_components_graph():
     of the currently active dataset.
     """
     graph = PCA.interactive_pca_results(DataSet().data)
-    return Response(graph, media_type='text/html')
+    return JSONResponse(graph, 200)
 
 
 @router.get('/pca/transform', summary="PCA transformation result", response_model=DatasetSchema)

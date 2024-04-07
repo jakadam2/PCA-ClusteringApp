@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import Chart from "../components/Chart";
 import MenuButton from "../components/buttons/MenuButton";
 import Statistics from "../components/clusterization/Statistics";
 import Title from "../components/Title";
@@ -52,7 +51,7 @@ const ClusterizationVisualization = () => {
   return (
     <div className="relative h-[450px] ">
       <Title title="Wizualizacja" />
-      <Chart src={img} />
+      {/* <Chart src={img} /> */}
       <Statistics />
       <div className="left-0 right-0 flex justify-center items-center mt-10">
         <MenuButton />

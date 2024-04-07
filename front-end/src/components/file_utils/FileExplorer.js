@@ -45,13 +45,14 @@ const FileExplorer = () => {
         });
 
         if (!response.ok) {
-          throw new Error(`Error: ${response.statusText}`);
+          const errorMsg = await response.text();
+          throw new Error(errorMsg);
         }
 
         navigate("/data-type-edit");
       } catch (error) {
         console.error("Error uploading file:", error);
-        alert("Error uploading file.");
+        alert(`Error uploading file. ${error}`);
 
         window.location.reload();
       }
@@ -62,7 +63,7 @@ const FileExplorer = () => {
 
   return (
     <div className="relative min-h-72">
-      <Title title="Ścieżka do pliku"/>
+      <Title title="Ścieżka do pliku" />
       <div
         {...getRootProps({ className: "dropzone" })}
         className="bg-zinc-50 h-36 px-10 py-5 border rounded border-main-100
@@ -71,24 +72,21 @@ const FileExplorer = () => {
         <input {...getInputProps()} />
 
         <div>
-            <p className="text-gray-400 text-center">
+          <p className="text-gray-400 text-center">
             Możesz przeciągnąć i upuścić plik tutaj, lub kliknij by wybrać.
+          </p>
+
+          {selectedFile && (
+            <p className="text-main text-sm text-center">
+              Wybrany plik: {selectedFile.name}
             </p>
-            
-            {selectedFile && (
-                <p className="text-main text-sm text-center">
-                    Wybrany plik: {selectedFile.name}
-                </p>
-            )}
+          )}
         </div>
       </div>
       {selectedFile && (
         <div>
           <div className="absolute bottom-0 right-0">
-            <button
-              onClick={handleStartWork}
-              className={navigationButtonStyle}
-            >
+            <button onClick={handleStartWork} className={navigationButtonStyle}>
               Zacznij pracę
             </button>
           </div>

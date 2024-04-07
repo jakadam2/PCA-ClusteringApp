@@ -9,7 +9,7 @@ const MainMenu = () => {
 
   return (
     <div>
-      <Title title="Menu"/>
+      <Title title="Menu" />
       <DataPreview />
       <div className="left-0 right-0 flex justify-center items-center">
         <div className="relative h-[100px] w-[400px]">
