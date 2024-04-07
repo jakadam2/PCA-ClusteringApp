@@ -37,7 +37,7 @@ class PCA:
 
     @classmethod
     def interactive_pca_results(cls,data_set:pd.DataFrame) -> str:
-        '''Make interactive plots using plotly and return html'''
+        '''Make interactive plots using plotly and return json string'''
         cls._fit(data_set)
         pca_graph = make_subplots(rows=2,cols=2,subplot_titles=("Explained variance ratio", 
                                                                 "Components direction", 

@@ -80,18 +80,18 @@ async def get_components_graph():
     of the currently active dataset.
     """
     graph = PCA.interactive_pca_results(DataSet().data)
-    return JSONResponse(graph, 200)
+    return Response(graph, media_type='application/json')
 
 
 @router.get('/pca/transform', summary="PCA transformation result", response_model=DatasetSchema)
-async def get_pca():
+async def get_pca(rows: Annotated[int, Query(gt=1)]):
     """
     ## Get the result of PCA transformation.
 
     This endpoint applies PCA transformation to the current active dataset and returns the transformed dataset schema.
     """
     transformed_data = PCA.transform(DataSet().data, DataSet().age)
-    return DatasetSchema.from_data_frame(transformed_data)
+    return DatasetSchema.from_data_frame(transformed_data.head(n = rows))
 
 
 @router.put('/pca/transform', summary="Perform PCA")
@@ -161,7 +161,7 @@ async def get_clusters_plot(clustering_id: Annotated[str, Depends(clustering_id_
     Returns plot of the clustering identified by the clustering id.
     """
     graph = ClusteringInteractive.visualize_clustering(clustering_id)
-    return Response(graph, media_type='text/html')
+    return Response(graph, media_type='application/json')
 
 
 @router.get("/clustering/{clustering_id}/clusters", summary="Clusters", response_model=Column)
