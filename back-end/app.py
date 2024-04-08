@@ -1,6 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import multiprocessing
 
 from source.api.api import router
 
@@ -21,4 +22,5 @@ app.add_middleware(
 
 
 if __name__ == "__main__":
-    uvicorn.run("app:app", host="127.0.0.1", port=8000,log_level="debug",reload=True)
+    multiprocessing.freeze_support()
+    uvicorn.run(app, host="127.0.0.1", port=8000,log_level="debug",reload=False,workers = 1)
