@@ -10,9 +10,9 @@ const NewPageButton = ({
 }) => {
   const navigate = useNavigate();
 
-  const handleClick = () => {
+  const handleClick = async () => {
     if (isActive) {
-      executable();
+      await executable();
       navigate(path, { state: state });
     }
   };
