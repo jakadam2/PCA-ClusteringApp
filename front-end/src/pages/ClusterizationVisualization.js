@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MenuButton from "../components/buttons/MenuButton";
-import Statistics from "../components/clusterization/Statistics";
 import Plot from "react-plotly.js";
 import Title from "../components/Title";
 
@@ -15,22 +14,51 @@ const getErrorMsg = async (response) => {
   ).msg;
 };
 
+const Statistics = ({ statistics }) => {
+  const [statisticsToDisplay, setStatisticsToDisplay] = useState({});
+  useEffect(() => {
+    setStatisticsToDisplay(statistics);
+  }, [statistics]);
+  if (statisticsToDisplay == {}) return;
+  return (
+    <div className="my-5 items-center">
+      <header className="text-xl font-semibold text-center mb-2 text-main-dark">
+        Statystyki klastrów
+      </header>
+      <div className="mb-4 items-center relative w-[40%] left-[30%]">
+        {Object.keys(statisticsToDisplay).map((key) => {
+          return (
+            <div className="flex">
+              <label htmlFor="eps" className="text-gray-600 mr-2 font-semibold">
+                {key + ": "}
+              </label>
+              <div>{statisticsToDisplay[key].toFixed(4)}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 const ClusterizationVisualization = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
   const { algorithm, columns, algorithmParams } = state;
   const [clusteringID, setClusteringID] = useState("");
   const [plot, setPlot] = useState({ data: [], layout: {} });
+  const [statistics, setStatistics] = useState({});
+  const [clusters, setClusters] = useState({});
 
   const performClustering = async () => {
     try {
-      console.log(
-        "test: ",
-        JSON.stringify({
-          columns: columns,
-          method: { name: algorithm, parameters: algorithmParams },
-        })
-      );
+      // console.log(
+      //   "test: ",
+      //   JSON.stringify({
+      //     columns: columns,
+      //     method: { name: algorithm, parameters: algorithmParams },
+      //   })
+      // );
       const response = await fetch("http://localhost:8000/api/clustering", {
         //mode: "no-cors",
         headers: {
@@ -94,21 +122,93 @@ const ClusterizationVisualization = () => {
     }
   };
 
+  const fetchStatistics = async () => {
+    try {
+      console.log(clusteringID);
+      const response = await fetch(
+        `http://localhost:8000/api/clustering/${clusteringID}/statistics`,
+        {
+          //mode: "no-cors",
+          headers: {
+            accept: "application/json",
+          },
+          method: "GET",
+        }
+      );
+
+      if (!response.ok) {
+        const status = await response.status;
+        if (status === 422) {
+          const errorMsg = await getErrorMsg(response);
+          throw new Error(`${errorMsg}`);
+        } else {
+          const errorMsg = await response.statusText;
+          throw new Error(`${errorMsg}`);
+        }
+      }
+
+      const fetchedStatistics = await response.json();
+      setStatistics(fetchedStatistics.statistics);
+    } catch (error) {
+      console.error("Error fetching statistics:", error);
+      alert(`Error fetching statistics. ${error}`);
+    }
+  };
+
+  const fetchClusters = async () => {
+    try {
+      console.log(clusteringID);
+      const response = await fetch(
+        `http://localhost:8000/api/clustering/${clusteringID}/clusters`,
+        {
+          //mode: "no-cors",
+          headers: {
+            accept: "application/json",
+          },
+          method: "GET",
+        }
+      );
+
+      if (!response.ok) {
+        const status = await response.status;
+        if (status === 422) {
+          const errorMsg = await getErrorMsg(response);
+          throw new Error(`${errorMsg}`);
+        } else {
+          const errorMsg = await response.statusText;
+          throw new Error(`${errorMsg}`);
+        }
+      }
+
+      const fetchedClusters = await response.json();
+      console.log(fetchedClusters);
+      setClusters(fetchedClusters);
+    } catch (error) {
+      console.error("Error fetching clusters:", error);
+      alert(`Error fetching clusters. ${error}`);
+    }
+  };
+
   useEffect(() => {
     performClustering();
   }, []);
 
   useEffect(() => {
-    if (clusteringID !== "") fetchPlot();
+    if (clusteringID !== "") {
+      fetchPlot();
+      fetchStatistics();
+      fetchClusters();
+    }
   }, [clusteringID]);
 
   return (
     <div className="relative h-[450px] ">
-      <Title title="Wizualizacja" />
+      <Title title="Wizualizacja klasteryzacji" />
       <div className="left-0 right-0 flex justify-center items-center">
         <Plot data={plot.data} layout={plot.layout} />
       </div>
-      <Statistics />
+      <Statistics statistics={statistics} />
+      {/* <DataPreview url = {`http://localhost:8000/api/clustering/${clusteringID}/clusters_data`} /> */}
       <div className="left-0 right-0 flex justify-center items-center mt-10">
         <MenuButton />
       </div>

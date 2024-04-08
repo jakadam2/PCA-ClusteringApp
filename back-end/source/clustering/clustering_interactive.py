@@ -24,7 +24,7 @@ class ClusteringInteractive(Clustering):
         cls.histogram(clusters, fig, 4, 1)
         cls.cluster_plot(reduced_data, clusters, fig, 2, 1)
 
-        return go.FigureWidget(fig)
+        return fig
 
     @staticmethod
     def setup_figure() -> go.Figure:
