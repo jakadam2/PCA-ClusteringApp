@@ -169,10 +169,7 @@ const DataTypeEditPage = () => {
             <thead className="bg-main-50">
               <tr>
                 {headers.map((header, columnId) => (
-                  <th
-                    key={header}
-                    className={dataHeaderStyle}
-                  >
+                  <th key={header} className={dataHeaderStyle}>
                     <input
                       placeholder={header}
                       onChange={(newName) =>
@@ -203,7 +200,11 @@ const DataTypeEditPage = () => {
                       defaultValue={variable["type"]}
                     >
                       {dataTypes.map((type) => (
-                        <option key={type} value={type} className="hover:bg-main-light">
+                        <option
+                          key={type}
+                          value={type}
+                          className="hover:bg-main-light"
+                        >
                           {type}
                         </option>
                       ))}

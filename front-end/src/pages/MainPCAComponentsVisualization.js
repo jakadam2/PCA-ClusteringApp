@@ -1,65 +1,50 @@
 import React, { useEffect, useState } from "react";
 import MenuButton from "../components/buttons/MenuButton";
-import Chart from "../components/Chart";
-import { defaultButtonStyle } from "../common/styles";
 import Title from "../components/Title";
+import Plot from "react-plotly.js";
+import DataPreview from "../components/data_preview/DataPreview";
+
+const ROWS = 10;
 
 const MainPCAComponentsVisualization = () => {
-  const imageUrl = "http://localhost:8000/api/pca/graph";
-  const transformUrl = "http://localhost:8000/api/pca/transform";
+  const plotUrl = "http://localhost:8000/api/pca/graph";
+  const [plot, setPlot] = useState({ data: [], layout: {} });
 
-  // const imageUrl =
-  //   "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/132.png";
-  const [img, setImg] = useState();
-  const [canPerformPCA, setCanPerformPCA] = useState(true);
-
-  const performPCA = async () => {
-    if (canPerformPCA) {
-      setCanPerformPCA(false);
-      await fetch(transformUrl, {
+  const fetchPlot = async () => {
+    try {
+      const res = await fetch(plotUrl, {
         //mode: "no-cors",
-        method: "PUT",
+        method: "GET",
       });
+      if (!res.ok) {
+        throw new Error(res.statusText());
+      }
+      const plotJSON = await res.json();
+      //TODO: how to not hardcode this?
+      (await plotJSON).layout.height = 800;
+      (await plotJSON).layout.width = 1200;
+      setPlot(await plotJSON);
+    } catch (error) {
+      console.error("Error fetching plot:", error);
+      alert(`Error fetching plot.`);
     }
   };
 
-  const fetchImage = async () => {
-    const res = await fetch(imageUrl, {
-      //mode: "no-cors",
-      method: "GET",
-    });
-    const imageBlob = await res.blob();
-    var urlCreator = window.URL || window.webkitURL;
-    const imageObjectURL = urlCreator.createObjectURL(imageBlob);
-    document.querySelector("#image").src = imageUrl;
-    setImg(imageObjectURL);
-  };
-
   useEffect(() => {
-    fetchImage();
+    fetchPlot();
   }, []);
 
   return (
-    <div className="relative h-[800px]">
+    <div>
       <div className="-mb-5">
-        <Title title="PCA"/>
+        <Title title="PCA" />
       </div>
-      <Chart img={img} />
       <div className="left-0 right-0 flex justify-center items-center">
-        <button
-          className={defaultButtonStyle + "relative w-[200px]"}
-          onClick={performPCA}
-          style={
-            canPerformPCA
-              ? {}
-              : {
-                  backgroundColor: "gray",
-                }
-          }
-        >
-          Zaaplikuj PCA
-        </button>
+        <Plot data={plot.data} layout={plot.layout} />
       </div>
+      <DataPreview
+        url={`http://localhost:8000/api/pca/transform?rows=${ROWS}`}
+      />
       <div className="left-0 right-0 flex justify-center items-center">
         <MenuButton />
       </div>

@@ -3,14 +3,16 @@ import { dataHeaderStyle } from "../../common/styles";
 
 const ROWS = 10;
 
-const DataPreview = () => {
+const DataPreview = ({
+  url = `http://localhost:8000/api/dataset?rows=${ROWS}`,
+}) => {
   const [data, setData] = useState([]);
+  const [variables, setVariables] = useState([]);
+  const [headers, setHeaders] = useState([]);
+  const [values, setValues] = useState([]);
 
   useEffect(() => {
-    const requestDataset = fetch(
-      `http://localhost:8000/api/dataset?rows=${ROWS}`
-    ).then((res) => res.json());
-
+    const requestDataset = fetch(url).then((res) => res.json());
     Promise.all([requestDataset]).then(([dataset]) => {
       setData({
         dataset: dataset,
@@ -18,25 +20,35 @@ const DataPreview = () => {
     });
   }, []);
 
-  const variables =
-    data["dataset"] !== undefined ? data["dataset"]["variables"] : [];
-  const headers =
-    data["dataset"] !== undefined
-      ? data["dataset"]["variables"].map((variable) => variable["name"])
-      : [];
-  const values = [];
-  if (data["dataset"] !== undefined) {
-    for (let i = 0; i < ROWS; i++) {
-      values.push([]);
-    }
-    for (let variable of data["dataset"]["variables"]) {
-      let i = 0;
-      for (let value of variable["values"]) {
-        values[i].push(value);
-        i++;
+  useEffect(() => {
+    setVariables(
+      data["dataset"] !== undefined ? data["dataset"]["variables"] : []
+    );
+    setHeaders(
+      data["dataset"] !== undefined
+        ? data["dataset"]["variables"].map((variable) => variable["name"])
+        : []
+    );
+    const valuesCurr = [];
+    if (data["dataset"] !== undefined) {
+      for (let i = 0; i < ROWS; i++) {
+        valuesCurr.push([]);
+      }
+      for (let variable of data["dataset"]["variables"]) {
+        let i = 0;
+        for (let value of variable["values"]) {
+          valuesCurr[i].push(
+            variable["type"] === "numerical" ? Number(value).toFixed(4) : value
+          );
+          i++;
+          if (i === ROWS) {
+            break;
+          }
+        }
       }
     }
-  }
+    setValues(valuesCurr);
+  }, [data]);
 
   return (
     <div className="relative h-96">
