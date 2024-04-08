@@ -1,53 +1,75 @@
 {
-  "name": "frontend",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "concurrently": "^8.2.2",
-    "cross-env": "^7.0.3",
-    "electron": "^29.1.4",
-    "papaparse": "^5.4.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-dropzone": "^14.2.3",
-    "react-router-dom": "^6.22.3",
-    "react-scripts": "5.0.1",
-    "wait-on": "^7.2.0",
-    "web-vitals": "^2.1.4"
-  },
-  "main": "public/main.js",
-  "homepage": "./",
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "electron:serve": "concurrently -k \"cross-env BROWSER=none yarn start\" \"yarn electron:start\" ",
-    "electron:build": "",
-    "electron:start": "electron ."
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "devDependencies": {
-    "tailwindcss": "^3.4.1"
-  }
+    "name": "frontend",
+    "description": "app for performing PCA analysis and clusterization",
+    "author": "heh",
+    "version": "0.1.0",
+    "private": true,
+    "dependencies": {
+        "@testing-library/jest-dom": "^5.17.0",
+        "@testing-library/react": "^13.4.0",
+        "@testing-library/user-event": "^13.5.0",
+        "child_process": "^1.0.2",
+        "childprocess": "^2.0.2",
+        "cross-env": "^7.0.3",
+        "electron-dev": "^1.0.1",
+        "electron-is-dev": "^3.0.1",
+        "js2c": "^0.0.7",
+        "papaparse": "^5.4.1",
+        "path": "^0.12.7",
+        "plotly.js": "^2.30.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-dropzone": "^14.2.3",
+        "react-plotly.js": "^2.6.0",
+        "react-router-dom": "^6.22.3",
+        "react-scripts": "5.0.1",
+        "web-vitals": "^2.1.4"
+    },
+    "main": "public/main.js",
+    "homepage": "./",
+    "scripts": {
+        "react-start": "react-scripts start",
+        "react-build": "react-scripts build",
+        "react-test": "react-scripts test",
+        "react-eject": "react-scripts eject",
+        "electron:serve": "concurrently -k \"cross-env BROWSER=none yarn react-start\" \"wait-on http://localhost:3000/ && electron .\"",
+        "electron:build": "electron-packager . PCApp",
+        "electron:start": "electron .",
+        "electron-build": "electron-builder",
+        "build": "npm run react-build && npm run electron-build",
+        "start": "concurrently -k \"cross-env BROWSER=none yarn react-start\" \"wait-on http://localhost:3000/ && electron .\""
+    },
+    "browser": {
+        "child_process": false
+    },
+    "eslintConfig": {
+        "extends": [
+            "react-app",
+            "react-app/jest"
+        ]
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "devDependencies": {
+        "@electron/packager": "github:electron/packager",
+        "concurrently": "^8.2.2",
+        "electron": "^29.2.0",
+        "electron-builder": "^24.13.3",
+        "electron-packager": "^17.1.2",
+        "tailwindcss": "^3.4.1",
+        "wait-on": "^7.2.0"
+    },
+    "build": {
+        "appId": "PCApp"
+    }
 }
