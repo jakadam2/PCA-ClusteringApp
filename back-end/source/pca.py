@@ -7,6 +7,7 @@ from plotly.subplots import make_subplots
 
 from source.data_set import DataSet
 from source.plotting import get_colour_palette_rgba,get_colour_palette
+from source.preprocessing.dataprocessing import DataProcessing
 
 import pandas as pd
 import numpy as np
@@ -23,17 +24,15 @@ class PCA:
     
     @classmethod
     def _fit(cls,data_set:pd.DataFrame) -> None:
-        if cls.current_age == -1:
-            cls.current_age += 1
-            cls._pca.fit(StandardScaler().fit_transform(data_set.select_dtypes(include=np.number).dropna()))
-            cls._columns_names = data_set.select_dtypes(include=np.number).columns
-            cls._columns_size = len(cls._columns_names)
+        cls._pca.fit(StandardScaler().fit_transform(data_set.select_dtypes(include=np.number)))
+        cls._columns_names = data_set.select_dtypes(include=np.number).columns
+        cls._columns_size = len(cls._columns_names)
 
     @classmethod
     def transform(cls,data_set:pd.DataFrame,age:int = -2) -> pd.DataFrame:
         '''Fit PCA transform if needed and returns transformed data'''
         cls._fit(data_set)
-        return cls._pca.transform(data_set.select_dtypes(include=np.number).notnull())
+        return cls._pca.transform(data_set.select_dtypes(include=np.number))
 
     @classmethod
     def interactive_pca_results(cls,data_set:pd.DataFrame) -> str:
