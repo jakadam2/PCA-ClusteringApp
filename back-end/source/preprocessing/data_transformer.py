@@ -5,6 +5,7 @@ import pandas as pd
 from pandas import DataFrame, Series
 
 from source.data_type import DataType
+from source.exceptions import ColumnConversionError
 from source.normalization import NumNormType, CatNormType
 from source.preprocessing.dataprocessing import DataProcessing
 from source.preprocessing.normalization import Normalization
@@ -18,14 +19,16 @@ class DataTransformer(DataProcessing):
         dataset = dataset.copy()
 
         for column_name, new_type in mapping.items():
-            match new_type:
-                case DataType.NUMERICAL:
-                    dataset[column_name] = DataTransformer._to_numeric(dataset[column_name])
-                case DataType.CATEGORICAL:
-                    dataset[column_name] = DataTransformer._to_categorical(dataset[column_name])
-                case DataType.DATETIME:
-                    dataset[column_name] = DataTransformer._to_datetime(dataset[column_name])
-
+            try:
+                match new_type:
+                    case DataType.NUMERICAL:
+                        dataset[column_name] = DataTransformer._to_numeric(dataset[column_name])
+                    case DataType.CATEGORICAL:
+                        dataset[column_name] = DataTransformer._to_categorical(dataset[column_name])
+                    case DataType.DATETIME:
+                        dataset[column_name] = DataTransformer._to_datetime(dataset[column_name])
+            except ValueError as ve:
+                raise ColumnConversionError(column_name, new_type, str(ve))
         return dataset
 
     @staticmethod
@@ -35,7 +38,7 @@ class DataTransformer(DataProcessing):
         elif column.dtype == np.datetime64:
             return column.map(pd.Timestamp.timestamp)
         else:
-            return pd.to_numeric(column, errors="coerce")
+            return pd.to_numeric(column, errors="raise")
 
     @staticmethod
     def _to_categorical(column: Series):

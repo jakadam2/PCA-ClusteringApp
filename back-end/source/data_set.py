@@ -1,13 +1,12 @@
-import pandas as pd
-import numpy as np
-from pandas.errors import ParserError
+from pathlib import Path
 
-from source.api.schemas import DatasetSchema
-from source.data_type import DataType
+import pandas as pd
+from pandas import DataFrame
+from pandas.errors import ParserError, EmptyDataError
 
 from fastapi import UploadFile
 
-from source.exceptions import NoActiveDataset
+from source.exceptions import NoActiveDataset, InvalidFileExtension, EmptyFileException, NaNValuesException
 
 
 class DataSetImplementation:
@@ -21,13 +20,31 @@ class DataSetImplementation:
 
     def load_data(self, file: UploadFile) -> None:
         """Loads DataFrame from DatasetSchema object"""
-        dataset = pd.read_csv(file.file, sep=';', decimal=",")
+        dataset = self.safe_read(file)
+
         for column in dataset.columns[dataset.dtypes == 'object']:
             try:
                 dataset[column] = pd.to_datetime(dataset[column])
             except (ParserError, ValueError):
                 pass
+
         self._data_set = dataset
+
+    def safe_read(self, file: UploadFile, expected_extension: str = ".csv") -> DataFrame:
+        """Validates and reads given file, raising HTTP errors in case of invalid file, returns loaded file"""
+        file_extension = Path(file.filename).suffix
+        if file_extension != expected_extension:
+            raise InvalidFileExtension(expected_extension, file_extension)
+
+        try:
+            data = pd.read_csv(file.file, sep=";", decimal=",")
+        except EmptyDataError:
+            raise EmptyFileException(file.filename)
+
+        if data.isnull().any(axis=None):
+            raise NaNValuesException()
+
+        return data
 
     @property
     def data(self) -> pd.DataFrame:
