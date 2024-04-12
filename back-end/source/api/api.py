@@ -25,7 +25,7 @@ async def post_dataset(file: UploadFile = File(...)):
     Uploaded dataset becomes currently active dataset.
     The CSV file should be delimited by semicolons (;).
     """
-    DataSet().load_data(file)
+    DataSet.load_data(file)
     return JSONResponse('Uploaded',201) if not DataSet().has_null else JSONResponse('Data cannot contain missing values',400)
 
 
@@ -44,7 +44,7 @@ async def get_head(rows: Annotated[int, Query(gt=1)]):
     """
     ## Get the first 'n' rows of the dataset.
     """
-    head = DataSet().get_head(rows)
+    head = DataSet.get_head(rows)
     return DatasetSchema.from_data_frame(head)
 
 
@@ -56,7 +56,7 @@ async def update_columns_names(input_schema: UpdateColumnNames):
     Renames dataset's columns according to the given mapping of old column names to new column names.
     """
     transformed_data = DataTransformer.rename(DataSet().data, input_schema.mapping)
-    DataSet().data = transformed_data
+    DataSet.data = transformed_data
 
 
 @router.put("/dataset/columns_types", summary="Update column types")
@@ -103,7 +103,7 @@ async def perform_pca():
     and sets the result as current active dataset.
     """
     transformed_data = PCA.transform(DataSet().data, DataSet().age)
-    DataSet().data = transformed_data
+    DataSet.data = transformed_data
 
 
 @router.get("/normalization/methods", summary="Normalization methods", response_model=list[NormalizationType])
@@ -123,7 +123,7 @@ async def perform_normalization(normalizations: list[NormalizationType]):
     All available normalization methods can be found at `/normalization/methods`.
     """
     methods = [normalization.name for normalization in normalizations]
-    DataSet().data = DataTransformer.normalize(DataSet().data, methods)
+    DataSet.data = DataTransformer.normalize(DataSet().data, methods)
 
 
 @router.get("/data_types", summary="Data types", response_model=list[DataType])
