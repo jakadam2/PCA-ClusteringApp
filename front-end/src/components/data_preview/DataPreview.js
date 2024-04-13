@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { dataHeaderStyle } from "../../common/styles";
+import { navigationButtonStyle } from "../../common/styles";
+import { useNavigate } from "react-router-dom";
 
 const ROWS = 10;
 
 const DataPreview = ({
   url = `http://localhost:8000/api/dataset?rows=${ROWS}`,
+  saveOption = false,
 }) => {
   const [data, setData] = useState([]);
   const [variables, setVariables] = useState([]);
   const [headers, setHeaders] = useState([]);
   const [values, setValues] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const requestDataset = fetch(url).then((res) => res.json());
@@ -49,6 +53,15 @@ const DataPreview = ({
     }
     setValues(valuesCurr);
   }, [data]);
+
+  const saveData = () => {
+    navigate("/save-file", {
+      state: {
+        headers: headers,
+        values: values,
+      },
+    });
+  };
 
   return (
     <div className="relative h-96">
@@ -100,6 +113,13 @@ const DataPreview = ({
           </tbody>
         </table>
       </div>
+      {saveOption && (
+        <div className="left-0 right-0 flex justify-center items-center ">
+          <button className={navigationButtonStyle} onClick={saveData}>
+            <span className="">Zapisz </span>
+          </button>
+        </div>
+      )}
     </div>
   );
 };
