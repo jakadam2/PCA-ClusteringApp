@@ -44,7 +44,7 @@ from source.preprocessing.data_transformer import DataTransformer
 from source.data_type import DataType
 from source.normalization import CatNormType, NumNormType
 
-ColumnName = Annotated[str, Field(min_length=1, max_length=99)]
+ColumnName = Annotated[str, Field(min_length=1)]
 
 
 class Column(BaseModel):

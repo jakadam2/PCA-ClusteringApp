@@ -114,6 +114,9 @@ class ClusteringInteractive(Clustering):
     @staticmethod
     def get_line_density(points: pd.Series):
         plt.close()
+        if len(unique := points.unique()) == 1:
+            return np.array([[*unique, 1]])
+
         sample_points = points.sample(n=min(1000, len(points)), replace=False, random_state=42)
         plot: plt.Axes = sns.kdeplot(y=sample_points, fill=True)
         poly: PolyCollection = plot.collections[0]
