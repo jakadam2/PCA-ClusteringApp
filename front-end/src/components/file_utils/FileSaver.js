@@ -1,9 +1,20 @@
 import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 
 const FileSaver = () => {
   const [directoryHandle, setDirectoryHandle] = useState(null);
   const [directoryName, setDirectoryName] = useState("");
   const [fileName, setFileName] = useState("");
+  const [data, setData] = useState([]);
+  const { state } = useLocation();
+  const { headers, values } = state;
+
+  const parseData = () => {
+    setData([
+      ["name1", "city1", "some other info"],
+      ["name2", "city2", "more info"],
+    ]);
+  };
 
   const selectDirectory = async () => {
     try {
@@ -31,11 +42,13 @@ const FileSaver = () => {
     }
 
     try {
-      // TODO - header should have Content-Type for csv files
-      const response = await fetch("http://localhost:8000/file");
-      if (!response.ok) throw new Error("Error while fetching file.");
+      let fileData = headers.join(";") + "\r\n";
 
-      const fileData = await response.blob();
+      values.forEach(function (rowArray) {
+        let row = rowArray.join(";");
+        fileData += row + "\r\n";
+      });
+
       const effectiveFileName = fileName.endsWith(".csv")
         ? fileName
         : `${fileName}.csv`;

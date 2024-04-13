@@ -25,8 +25,8 @@ async def post_dataset(file: UploadFile = File(...)):
     Uploaded dataset becomes currently active dataset.
     The CSV file should be delimited by semicolons (;).
     """
-    DataSet.load_data(file)
-    return JSONResponse('Uploaded',201) if not DataSet().has_null else JSONResponse('Data cannot contain missing values',400)
+    DataSet().load_data(file)
+    return JSONResponse('Uploaded', 201) if not DataSet().has_null else JSONResponse('Data cannot contain missing values',400)
 
 
 @router.get("/file", summary="Retrieve the dataset", response_model=DatasetSchema)
@@ -177,6 +177,17 @@ async def get_clusters(clustering_id: Annotated[str, Depends(clustering_id_depen
         type=DataType.CATEGORICAL,
         values=clusters
     )
+
+
+@router.get("/clustering/{clustering_id}/clusters_data", summary="Clusters", response_model=DatasetSchema)
+async def get_clusters_dataset(clustering_id: Annotated[str, Depends(clustering_id_dependency)]):
+    """
+    ## Get clusters dataset.
+
+    Returns an original dataset extended by a column of clusters ids.
+    """
+    result = ClusteringInteractive.get_clustering_result(clustering_id)
+    return DatasetSchema.from_data_frame(result)
 
 
 @router.get(

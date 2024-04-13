@@ -1,9 +1,9 @@
-from typing import Optional
-
 import numpy as np
 import hashlib
 
 from enum import StrEnum
+
+import pandas as pd
 from numpy import ndarray
 from pandas import DataFrame
 from abc import abstractmethod
@@ -56,7 +56,7 @@ class Clustering:
 
     @classmethod
     def perform_clustering(
-            cls: type["Clustering"],
+            cls,
             data: DataFrame,
             dataset_id: int,
             method: ClusteringMethod,
@@ -94,7 +94,7 @@ class Clustering:
         return hashlib.md5(raw_key_bytes).hexdigest()
 
     @classmethod
-    def visualize_clustering(cls: type["Clustering"], clustering_id: str):
+    def visualize_clustering(cls, clustering_id: str):
         clusters = cls.clusters_cache[clustering_id]
         data = cls.dataset_cache[clustering_id]
         plot = cls.create_plot(data, clusters)
@@ -134,9 +134,17 @@ class Clustering:
         return data
 
     @classmethod
-    def get_clustering_methods(cls: type["Clustering"]) -> list[ClusteringMethod]:
+    def get_clustering_methods(cls) -> list[ClusteringMethod]:
         """Returns all available clustering methods."""
         return list(cls.clustering_methods.keys())
+
+    @classmethod
+    def get_clustering_result(cls, clustering_id: str):
+        """Return original dataset extended by a column with cluster ids."""
+        clusters = cls.clusters_cache[clustering_id]
+        original_data = cls.dataset_cache[clustering_id]
+        clusters_column = pd.Series(clusters, copy=True).astype('category', copy=False)
+        return original_data.assign(Clusters=clusters_column)
 
     @staticmethod
     def hopkins_statistic(data: DataFrame, sample_size=0.1, seed=42) -> float:
@@ -167,7 +175,7 @@ class Clustering:
         return u_sum / (u_sum + w_sum)
 
     @classmethod
-    def evaluate_clustering(cls: type["Clustering"], clustering_id: str) -> dict[str, float]:
+    def evaluate_clustering(cls, clustering_id: str) -> dict[str, float]:
         clusters = cls.clusters_cache[clustering_id]
         data = cls.dataset_cache[clustering_id]
         return {
