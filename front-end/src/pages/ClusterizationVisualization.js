@@ -208,7 +208,7 @@ const ClusterizationVisualization = () => {
         <Plot data={plot.data} layout={plot.layout} />
       </div>
       <Statistics statistics={statistics} />
-      {/* <DataPreview url = {`http://localhost:8000/api/clustering/${clusteringID}/clusters_data`} /> */}
+       <DataPreview url = {`http://localhost:8000/api/clustering/${clusteringID}/clusters_data`} />
       <div className="left-0 right-0 flex justify-center items-center mt-10">
         <MenuButton />
       </div>
