@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import MenuButton from "../components/buttons/MenuButton";
 import Plot from "react-plotly.js";
 import Title from "../components/Title";
+import DataPreview from "../components/data_preview/DataPreview";
 
 const getErrorMsg = async (response) => {
   return await (
@@ -48,7 +49,7 @@ const ClusterizationVisualization = () => {
   const [clusteringID, setClusteringID] = useState("");
   const [plot, setPlot] = useState({ data: [], layout: {} });
   const [statistics, setStatistics] = useState({});
-  const [clusters, setClusters] = useState({});
+  const [dataView, setDataView] = useState(<></>);
 
   const performClustering = async () => {
     try {
@@ -88,7 +89,6 @@ const ClusterizationVisualization = () => {
 
   const fetchPlot = async () => {
     try {
-      console.log(clusteringID);
       const response = await fetch(
         `http://localhost:8000/api/clustering/${clusteringID}/plot`,
         {
@@ -124,7 +124,6 @@ const ClusterizationVisualization = () => {
 
   const fetchStatistics = async () => {
     try {
-      console.log(clusteringID);
       const response = await fetch(
         `http://localhost:8000/api/clustering/${clusteringID}/statistics`,
         {
@@ -155,38 +154,13 @@ const ClusterizationVisualization = () => {
     }
   };
 
-  const fetchClusters = async () => {
-    try {
-      console.log(clusteringID);
-      const response = await fetch(
-        `http://localhost:8000/api/clustering/${clusteringID}/clusters`,
-        {
-          //mode: "no-cors",
-          headers: {
-            accept: "application/json",
-          },
-          method: "GET",
-        }
-      );
-
-      if (!response.ok) {
-        const status = await response.status;
-        if (status === 422) {
-          const errorMsg = await getErrorMsg(response);
-          throw new Error(`${errorMsg}`);
-        } else {
-          const errorMsg = await response.statusText;
-          throw new Error(`${errorMsg}`);
-        }
-      }
-
-      const fetchedClusters = await response.json();
-      console.log(fetchedClusters);
-      setClusters(fetchedClusters);
-    } catch (error) {
-      console.error("Error fetching clusters:", error);
-      alert(`Error fetching clusters. ${error}`);
-    }
+  const fetchData = async () => {
+    setDataView(
+      <DataPreview
+        url={`http://localhost:8000/api/clustering/${clusteringID}/clusters_data`}
+        saveOption={true}
+      />
+    );
   };
 
   useEffect(() => {
@@ -197,7 +171,7 @@ const ClusterizationVisualization = () => {
     if (clusteringID !== "") {
       fetchPlot();
       fetchStatistics();
-      fetchClusters();
+      fetchData();
     }
   }, [clusteringID]);
 
@@ -208,7 +182,8 @@ const ClusterizationVisualization = () => {
         <Plot data={plot.data} layout={plot.layout} />
       </div>
       <Statistics statistics={statistics} />
-      {/* <DataPreview url = {`http://localhost:8000/api/clustering/${clusteringID}/clusters_data`} /> */}
+      <Title title="Dane po klasteryzacji" />
+      {dataView}
       <div className="left-0 right-0 flex justify-center items-center mt-10">
         <MenuButton />
       </div>
