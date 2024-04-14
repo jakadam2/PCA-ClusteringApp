@@ -43,3 +43,42 @@ class NoActiveDataset(HTTPException):
 
     def __init__(self):
         super().__init__(status_code=404, detail=f"No active dataset present.")
+
+
+class InvalidFileExtension(HTTPException):
+    """Raised when an invalid file extension is provided."""
+
+    def __init__(self, expected_extension: str, given_extension: str):
+        detail = f"Invalid file extension provided. Expected: '{expected_extension}', Given: '{given_extension}'."
+        super().__init__(status_code=422, detail=detail)
+
+
+class EmptyFileException(HTTPException):
+    """Raised when an empty file is provided."""
+
+    def __init__(self, file_name: str):
+        super().__init__(status_code=422, detail=f"The provided file '{file_name}' is empty.")
+
+
+class InvalidMapping(HTTPException):
+    """Raised when invalid mapping was encountered."""
+
+    def __init__(self, reason: str):
+        super().__init__(status_code=422, detail=reason)
+
+
+class NaNValuesException(HTTPException):
+    """Raised when data contains NaN values"""
+
+    def __init__(self):
+        super().__init__(status_code=422, detail='Data cannot contain missing values')
+
+
+class ColumnConversionError(HTTPException):
+    """Raised when conversion of a column to a new type fails."""
+
+    def __init__(self, column_name: str, new_type: str, verbose_error: str):
+        super().__init__(
+            status_code=404,
+            detail=f"Failed to convert column '{column_name}' to type {new_type}.\nReason: \"{verbose_error}\""
+        )

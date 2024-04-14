@@ -35,8 +35,7 @@ clusteringDescription = {
 import datetime
 from typing import List, Union, Dict, Any, Annotated
 
-from annotated_types import MinLen
-from fastapi import File, Body
+from fastapi import File
 from pandas import DataFrame
 from pydantic import BaseModel, Field
 
@@ -45,9 +44,11 @@ from source.preprocessing.data_transformer import DataTransformer
 from source.data_type import DataType
 from source.normalization import CatNormType, NumNormType
 
+ColumnName = Annotated[str, Field(min_length=1)]
+
 
 class Column(BaseModel):
-    name: str = Field(description="The name of the column.")
+    name: ColumnName = Field(description="The name of the column.")
     type: DataType = Field(description="The data type of the column.")
     values: List[Union[float, int, bool, str, datetime.datetime]] = Field(description="A list of values contained in "
                                                                                       "the column."
@@ -129,7 +130,7 @@ class Graph(BaseModel):
 
 
 class UpdateColumnNames(BaseModel):
-    mapping: Dict[str, str] = Field(description="A mapping of old column names to new column names.")
+    mapping: Dict[ColumnName, ColumnName] = Field(description="A mapping of old column names to new column names.")
 
     class Config:
         json_schema_extra = {
@@ -143,7 +144,7 @@ class UpdateColumnNames(BaseModel):
 
 
 class UpdateColumnTypes(BaseModel):
-    mapping: Dict[str, DataType] = Field(description="A mapping of column names to their new data types.")
+    mapping: Dict[ColumnName, DataType] = Field(description="A mapping of column names to their new data types.")
 
     class Config:
         json_schema_extra = {

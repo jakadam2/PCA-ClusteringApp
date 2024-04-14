@@ -4,8 +4,9 @@ from fastapi import APIRouter, Query, UploadFile, File, Depends
 from fastapi.responses import Response, JSONResponse
 from pandas import DataFrame
 
-from source.api.dependencies import numerical_subset_dependency, clustering_id_dependency
-from source.api.schemas import DatasetSchema, UpdateColumnNames, UpdateColumnTypes, NormalizationType, \
+from source.api.dependencies import numerical_subset_dependency, clustering_id_dependency, \
+    column_name_mapping_dependency
+from source.api.schemas import DatasetSchema, UpdateColumnTypes, NormalizationType, \
     ClusteringMethodSchema, ClusteringStatistics, Column
 from source.clustering.clustering import Clustering, ClusteringMethod
 from source.clustering.clustering_interactive import ClusteringInteractive
@@ -25,8 +26,8 @@ async def post_dataset(file: UploadFile = File(...)):
     Uploaded dataset becomes currently active dataset.
     The CSV file should be delimited by semicolons (;).
     """
-    DataSet().load_data(file)
-    return JSONResponse('Uploaded', 201) if not DataSet().has_null else JSONResponse('Data cannot contain missing values',400)
+    DataSet.load_data(file)
+    return JSONResponse('Uploaded', 201)
 
 
 @router.get("/file", summary="Retrieve the dataset", response_model=DatasetSchema)
@@ -49,13 +50,13 @@ async def get_head(rows: Annotated[int, Query(gt=1)]):
 
 
 @router.put("/dataset/columns_names", summary="Update column names")
-async def update_columns_names(input_schema: UpdateColumnNames):
+async def update_columns_names(mapping: Annotated[dict[str, str], Depends(column_name_mapping_dependency)]):
     """
     ## Update the names of the dataset columns.
 
     Renames dataset's columns according to the given mapping of old column names to new column names.
     """
-    transformed_data = DataTransformer.rename(DataSet().data, input_schema.mapping)
+    transformed_data = DataTransformer.rename(DataSet().data, mapping)
     DataSet.data = transformed_data
 
 
@@ -68,7 +69,7 @@ async def update_columns_types(input_schema: UpdateColumnTypes):
     displayed type of the column but slo tries to transform the data to the desired type.
     """
     transformed_data = DataTransformer.change_types(DataSet().data, input_schema.mapping)
-    DataSet().data = transformed_data
+    DataSet.data = transformed_data
 
 
 @router.get("/pca/graph", summary="PCA components graph")
@@ -90,7 +91,7 @@ async def get_pca(rows: Annotated[int, Query(gt=1)]):
 
     This endpoint applies PCA transformation to the current active dataset and returns the transformed dataset schema.
     """
-    transformed_data = PCA.transform(DataSet().data, DataSet().age)
+    transformed_data = PCA.transform(DataSet().data, DataSet.age)
     return DatasetSchema.from_data_frame(transformed_data.head(n = rows))
 
 

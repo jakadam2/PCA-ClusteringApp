@@ -20,8 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 if __name__ == "__main__":
     print("backend here")
     multiprocessing.freeze_support()
-    uvicorn.run(app, host="127.0.0.1", port=8000,log_level="debug",reload=False,workers = 1)
+    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="debug", reload=False, workers=1)
